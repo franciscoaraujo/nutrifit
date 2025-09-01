@@ -1,0 +1,106 @@
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="400" height="400" fill="#f8f4f0" rx="20"/>
+  
+  <!-- Table surface -->
+  <rect x="20" y="150" width="360" height="220" fill="#d4a574" rx="10"/>
+  
+  <!-- Main salad bowl -->
+  <ellipse cx="200" cy="220" rx="60" ry="15" fill="#e5e7eb"/>
+  <ellipse cx="200" cy="215" rx="55" ry="40" fill="#ffffff" stroke="#d1d5db" stroke-width="2"/>
+  
+  <!-- Salad ingredients -->
+  <circle cx="180" cy="210" r="8" fill="#22c55e"/>
+  <circle cx="220" cy="205" r="6" fill="#ef4444"/>
+  <circle cx="190" cy="225" r="5" fill="#fbbf24"/>
+  <circle cx="210" cy="220" r="7" fill="#22c55e"/>
+  <circle cx="200" cy="200" r="4" fill="#ef4444"/>
+  <ellipse cx="185" cy="215" rx="12" ry="6" fill="#16a34a"/>
+  <ellipse cx="215" cy="210" rx="10" ry="5" fill="#16a34a"/>
+  
+  <!-- Salmon plate (left) -->
+  <ellipse cx="120" cy="200" rx="35" ry="8" fill="#e5e7eb"/>
+  <ellipse cx="120" cy="195" rx="30" ry="20" fill="#ffffff" stroke="#d1d5db" stroke-width="1"/>
+  <ellipse cx="120" cy="190" rx="20" ry="8" fill="#f97316"/>
+  <ellipse cx="120" cy="190" rx="15" ry="6" fill="#ea580c"/>
+  <rect x="115" y="185" width="10" height="3" fill="#22c55e"/>
+  
+  <!-- Quinoa bowl (right) -->
+  <ellipse cx="280" cy="200" rx="30" ry="7" fill="#e5e7eb"/>
+  <ellipse cx="280" cy="195" rx="25" ry="18" fill="#ffffff" stroke="#d1d5db" stroke-width="1"/>
+  <circle cx="275" cy="190" r="2" fill="#fbbf24"/>
+  <circle cx="285" cy="188" r="2" fill="#fbbf24"/>
+  <circle cx="280" cy="195" r="2" fill="#fbbf24"/>
+  <circle cx="270" cy="192" r="1" fill="#f97316"/>
+  <circle cx="290" cy="190" r="1" fill="#ef4444"/>
+  
+  <!-- Bread (top left) -->
+  <ellipse cx="100" cy="160" rx="25" ry="8" fill="#92400e"/>
+  <ellipse cx="100" cy="155" rx="20" ry="12" fill="#a16207"/>
+  <path d="M85 155 Q100 145 115 155" stroke="#92400e" stroke-width="1" fill="none"/>
+  
+  <!-- Roasted vegetables (top right) -->
+  <ellipse cx="300" cy="160" rx="25" ry="8" fill="#e5e7eb"/>
+  <ellipse cx="300" cy="155" rx="20" ry="12" fill="#ffffff" stroke="#d1d5db" stroke-width="1"/>
+  <rect x="295" y="150" width="4" height="8" fill="#f97316" rx="2"/>
+  <rect x="301" y="148" width="4" height="10" fill="#fbbf24" rx="2"/>
+  <rect x="290" y="152" width="3" height="6" fill="#22c55e" rx="1"/>
+  
+  <!-- Broccoli bowl (bottom left) -->
+  <ellipse cx="120" cy="280" rx="25" ry="6" fill="#e5e7eb"/>
+  <ellipse cx="120" cy="275" rx="20" ry="15" fill="#ffffff" stroke="#d1d5db" stroke-width="1"/>
+  <circle cx="115" cy="270" r="4" fill="#16a34a"/>
+  <circle cx="125" cy="268" r="4" fill="#22c55e"/>
+  <circle cx="120" cy="275" r="3" fill="#16a34a"/>
+  
+  <!-- Sweet potato (bottom right) -->
+  <ellipse cx="280" cy="280" rx="25" ry="6" fill="#e5e7eb"/>
+  <ellipse cx="280" cy="275" rx="20" ry="15" fill="#ffffff" stroke="#d1d5db" stroke-width="1"/>
+  <ellipse cx="275" cy="270" rx="8" ry="4" fill="#f97316"/>
+  <ellipse cx="285" cy="272" rx="6" ry="3" fill="#ea580c"/>
+  <path d="M270 268 Q275 265 280 268" stroke="#22c55e" stroke-width="1" fill="none"/>
+  
+  <!-- Plates -->
+  <ellipse cx="80" cy="240" rx="15" ry="3" fill="#e5e7eb"/>
+  <circle cx="80" cy="235" r="12" fill="#ffffff" stroke="#d1d5db" stroke-width="1"/>
+  
+  <ellipse cx="320" cy="240" rx="15" ry="3" fill="#e5e7eb"/>
+  <circle cx="320" cy="235" r="12" fill="#ffffff" stroke="#d1d5db" stroke-width="1"/>
+  
+  <!-- Glasses with water -->
+  <rect x="150" y="250" width="8" height="15" fill="#bfdbfe" rx="4"/>
+  <rect x="150" y="252" width="8" height="10" fill="#dbeafe" rx="4"/>
+  
+  <rect x="240" y="250" width="8" height="15" fill="#bfdbfe" rx="4"/>
+  <rect x="240" y="252" width="8" height="10" fill="#dbeafe" rx="4"/>
+  
+  <!-- Herbs/plants decoration -->
+  <circle cx="200" cy="120" r="15" fill="#22c55e" opacity="0.3"/>
+  <path d="M195 115 Q200 105 205 115" stroke="#16a34a" stroke-width="2" fill="none"/>
+  <path d="M190 120 Q200 110 210 120" stroke="#22c55e" stroke-width="1" fill="none"/>
+  
+  <!-- Utensils -->
+  <rect x="60" y="180" width="2" height="40" fill="#6b7280"/>
+  <rect x="65" y="180" width="2" height="40" fill="#6b7280"/>
+  <circle cx="61" cy="175" r="3" fill="#6b7280"/>
+  <circle cx="66" cy="175" r="3" fill="#6b7280"/>
+  
+  <rect x="330" y="180" width="2" height="40" fill="#6b7280"/>
+  <rect x="335" y="180" width="2" height="40" fill="#6b7280"/>
+  <circle cx="331" cy="175" r="3" fill="#6b7280"/>
+  <circle cx="336" cy="175" r="3" fill="#6b7280"/>
+  
+  <!-- Window light effect -->
+  <rect x="50" y="50" width="300" height="80" fill="url(#windowLight)" opacity="0.1"/>
+  
+  <defs>
+    <linearGradient id="windowLight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Text -->
+  <text x="200" y="350" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#16a34a">Mesa Saudável</text>
+  <text x="200" y="370" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#6b7280">Refeição Completa e Nutritiva</text>
+</svg>
