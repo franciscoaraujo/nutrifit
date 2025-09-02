@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faLeaf, faFire, faAppleAlt, faSearch, faFilter, faDrumstickBite, faBolt, faCube, faClock, faUtensils, faCheckCircle, faTimes, faBalanceScale } from "@fortawesome/free-solid-svg-icons";
+import { faLeaf, faAppleAlt, faDrumstickBite, faBolt, faCube, faClock, faUtensils, faCheckCircle, faTimes, faBalanceScale } from "@fortawesome/free-solid-svg-icons";
 import MainLayout from "@/components/layout/MainLayout";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";

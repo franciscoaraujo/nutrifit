@@ -393,7 +393,7 @@ export default function DashboardPage() {
             <div className="text-center py-12">
               <FontAwesomeIcon icon={faRuler} className="text-gray-300 text-6xl mb-4" />
               <p className="text-gray-500 text-lg">Nenhuma medida registrada ainda</p>
-              <p className="text-gray-400 mt-2">Clique em "Nova Medição" para começar a acompanhar seu progresso</p>
+              <p className="text-gray-400 mt-2">Clique em &quot;Nova Medição&quot; para começar a acompanhar seu progresso</p>
             </div>
           ) : (
             <div className="overflow-x-auto">

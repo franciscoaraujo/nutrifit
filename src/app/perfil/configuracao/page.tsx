@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCog, faUser, faVenus, faMars, faRuler, faWeight, faBullseye, faRunning, faSave, faCamera, faUpload } from '@fortawesome/free-solid-svg-icons';
+import { faCog, faUser, faVenus, faMars, faRuler, faWeight, faBullseye, faRunning, faSave, faUpload } from '@fortawesome/free-solid-svg-icons';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Card from '@/components/ui/Card';

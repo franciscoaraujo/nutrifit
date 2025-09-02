@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faBell, faUser, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faBell, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { useUser } from '@clerk/nextjs';
 import UserMenu from '@/components/auth/UserMenu';
 

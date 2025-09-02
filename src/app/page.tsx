@@ -127,7 +127,7 @@ export default function Home() {
                   <p className="text-sm text-gray-500">Perdeu 15kg em 6 meses</p>
                 </div>
               </div>
-              <p className="text-gray-600 italic">"O NutriFit mudou completamente minha relação com a comida. As dietas são fáceis de seguir e as receitas são deliciosas!"</p>
+              <p className="text-gray-600 italic">&quot;O NutriFit mudou completamente minha relação com a comida. As dietas são fáceis de seguir e as receitas são deliciosas!&quot;</p>
             </Card>
 
             {/* Testimonial 2 */}
@@ -139,7 +139,7 @@ export default function Home() {
                   <p className="text-sm text-gray-500">Ganhou 8kg de massa muscular</p>
                 </div>
               </div>
-              <p className="text-gray-600 italic">"Os treinamentos são perfeitos para meu objetivo de ganho de massa. Em apenas 4 meses já vi resultados impressionantes."</p>
+              <p className="text-gray-600 italic">&quot;Os treinamentos são perfeitos para meu objetivo de ganho de massa. Em apenas 4 meses já vi resultados impressionantes.&quot;</p>
             </Card>
 
             {/* Testimonial 3 */}
@@ -151,7 +151,7 @@ export default function Home() {
                   <p className="text-sm text-gray-500">Melhorou sua saúde geral</p>
                 </div>
               </div>
-              <p className="text-gray-600 italic">"Não buscava apenas perder peso, mas melhorar minha saúde. Com o NutriFit, meus exames melhoraram e tenho muito mais disposição."</p>
+              <p className="text-gray-600 italic">&quot;Não buscava apenas perder peso, mas melhorar minha saúde. Com o NutriFit, meus exames melhoraram e tenho muito mais disposição.&quot;</p>
             </Card>
           </div>
         </div>
