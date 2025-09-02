@@ -1,10 +1,23 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faEdit, faWeight, faRulerVertical, faCalendarAlt, faHeartbeat } from "@fortawesome/free-solid-svg-icons";
 import MainLayout from "@/components/layout/MainLayout";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import Link from "next/link";
 
 export default function ProfilePage() {
+  const [fotoPerfil, setFotoPerfil] = useState<string>('');
+
+  // Simular carregamento da foto do perfil (em uma aplicação real, viria de uma API)
+  useEffect(() => {
+    const fotoSalva = localStorage.getItem('fotoPerfil');
+    if (fotoSalva) {
+      setFotoPerfil(fotoSalva);
+    }
+  }, []);
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-8">
@@ -15,8 +28,16 @@ export default function ProfilePage() {
           <div className="lg:col-span-1">
             <Card className="p-6">
               <div className="flex flex-col items-center text-center mb-6">
-                <div className="w-32 h-32 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
-                  <FontAwesomeIcon icon={faUser} className="text-emerald-600 text-4xl" />
+                <div className="w-32 h-32 bg-emerald-100 rounded-full flex items-center justify-center mb-4 overflow-hidden">
+                  {fotoPerfil ? (
+                    <img 
+                      src={fotoPerfil} 
+                      alt="Foto do perfil" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <FontAwesomeIcon icon={faUser} className="text-emerald-600 text-4xl" />
+                  )}
                 </div>
                 <h2 className="text-xl font-bold">João Silva</h2>
                 <p className="text-gray-500">joao.silva@email.com</p>
@@ -60,14 +81,16 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 
-                <Button 
-                  variant="outline" 
-                  className="mt-6 w-full flex items-center justify-center" 
-                  size="md"
-                >
-                  <FontAwesomeIcon icon={faEdit} className="mr-2" />
-                  Editar Perfil
-                </Button>
+                <Link href="/perfil/configuracao">
+                  <Button 
+                    variant="outline" 
+                    className="mt-6 w-full flex items-center justify-center" 
+                    size="md"
+                  >
+                    <FontAwesomeIcon icon={faEdit} className="mr-2" />
+                    Editar Perfil
+                  </Button>
+                </Link>
               </div>
             </Card>
           </div>

@@ -32,9 +32,9 @@ export default function DashboardPage() {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [fotoCapturada, setFotoCapturada] = useState<string | null>(null);
   const [mostrarHistoricoFotos, setMostrarHistoricoFotos] = useState(false);
+  const [cameraAtiva, setCameraAtiva] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [cameraAtiva, setCameraAtiva] = useState(false);
 
   const handleInputChange = (campo: string, valor: string) => {
     setNovaMedida(prev => ({
@@ -76,8 +76,8 @@ export default function DashboardPage() {
       
       if (context) {
         context.drawImage(video, 0, 0);
-        const fotoDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-        setFotoCapturada(fotoDataUrl);
+        const dataURL = canvas.toDataURL('image/png');
+        setFotoCapturada(dataURL);
         pararCamera();
       }
     }
@@ -246,9 +246,13 @@ export default function DashboardPage() {
                 Foto de Progresso (Opcional)
               </h3>
               
-              {!fotoCapturada && !cameraAtiva && (
+              {!cameraAtiva && !fotoCapturada && (
                 <div className="flex gap-3">
-                  <Button variant="outline" onClick={iniciarCamera}>
+                  <Button 
+                    variant="outline" 
+                    size="md"
+                    onClick={iniciarCamera}
+                  >
                     <FontAwesomeIcon icon={faCamera} className="mr-2" />
                     Tirar Foto
                   </Button>
@@ -257,20 +261,28 @@ export default function DashboardPage() {
               
               {cameraAtiva && (
                 <div className="space-y-4">
-                  <div className="relative bg-black rounded-lg overflow-hidden max-w-md">
+                  <div className="relative max-w-md">
                     <video 
                       ref={videoRef} 
                       autoPlay 
                       playsInline 
-                      className="w-full h-auto"
+                      className="w-full h-auto rounded-lg border-2 border-emerald-200"
                     />
+                    <canvas ref={canvasRef} className="hidden" />
                   </div>
                   <div className="flex gap-3">
-                    <Button variant="primary" onClick={tirarFoto}>
-                      <FontAwesomeIcon icon={faCamera} className="mr-2" />
+                    <Button 
+                      variant="primary" 
+                      size="md"
+                      onClick={tirarFoto}
+                    >
                       Capturar
                     </Button>
-                    <Button variant="outline" onClick={pararCamera}>
+                    <Button 
+                      variant="outline" 
+                      size="md"
+                      onClick={pararCamera}
+                    >
                       Cancelar
                     </Button>
                   </div>
@@ -295,8 +307,6 @@ export default function DashboardPage() {
                   <p className="text-sm text-gray-600">Foto capturada com sucesso!</p>
                 </div>
               )}
-              
-              <canvas ref={canvasRef} style={{ display: 'none' }} />
             </div>
             
             <div className="flex justify-end gap-4 mt-6">

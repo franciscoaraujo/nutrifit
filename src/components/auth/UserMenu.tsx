@@ -1,18 +1,19 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { signOut, useSession } from 'next-auth/react';
+import { useUser, useClerk } from '@clerk/nextjs';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faSignOutAlt, faCog, faChartLine } from '@fortawesome/free-solid-svg-icons';
 
 export default function UserMenu() {
-  const { data: session, status } = useSession();
+  const { user, isLoaded } = useUser();
+  const { signOut } = useClerk();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: '/' });
+    await signOut();
   };
 
   // Fechar o menu quando clicar fora dele
@@ -29,24 +30,24 @@ export default function UserMenu() {
     };
   }, []);
 
-  if (status === 'loading') {
+  if (!isLoaded) {
     return (
       <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse"></div>
     );
   }
 
-  if (status === 'unauthenticated') {
+  if (!user) {
     return (
       <div className="flex space-x-2">
         <Link 
-          href="/auth/login"
+          href="/sign-in"
           className="text-sm font-medium text-primary hover:text-primary/80"
         >
           Entrar
         </Link>
         <span className="text-gray-300">|</span>
         <Link 
-          href="/auth/register"
+          href="/sign-up"
           className="text-sm font-medium text-primary hover:text-primary/80"
         >
           Registrar
@@ -61,19 +62,42 @@ export default function UserMenu() {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-2 focus:outline-none"
       >
-        <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white">
-          <FontAwesomeIcon icon={faUser} className="h-4 w-4" />
-        </div>
+        {user?.imageUrl ? (
+          <img 
+            src={user.imageUrl} 
+            alt="Foto do perfil" 
+            className="h-8 w-8 rounded-full object-cover border border-gray-200"
+          />
+        ) : (
+          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white">
+            <FontAwesomeIcon icon={faUser} className="h-4 w-4" />
+          </div>
+        )}
         <span className="text-sm font-medium hidden md:block">
-          {session?.user?.name || 'Usuário'}
+          {user?.firstName || user?.username || 'Usuário'}
         </span>
       </button>
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
           <div className="px-4 py-2 border-b border-gray-100">
-            <p className="text-sm font-medium text-gray-900">{session?.user?.name}</p>
-            <p className="text-xs text-gray-500 truncate">{session?.user?.email}</p>
+            <div className="flex items-center space-x-3">
+              {user?.imageUrl ? (
+                <img 
+                  src={user.imageUrl} 
+                  alt="Foto do perfil" 
+                  className="h-10 w-10 rounded-full object-cover border border-gray-200"
+                />
+              ) : (
+                <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white">
+                  <FontAwesomeIcon icon={faUser} className="h-5 w-5" />
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">{user?.firstName || user?.username}</p>
+                <p className="text-xs text-gray-500 truncate">{user?.primaryEmailAddress?.emailAddress}</p>
+              </div>
+            </div>
           </div>
 
           <Link 

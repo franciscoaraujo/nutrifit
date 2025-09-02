@@ -1,3 +1,8 @@
+'use client';
+
+import { useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -7,6 +12,14 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 
 export default function Home() {
+  const { isLoaded, user } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoaded && user) {
+      router.push('/receitas');
+    }
+  }, [isLoaded, user, router]);
   return (
     <MainLayout>
       {/* Hero Section */}
@@ -34,7 +47,7 @@ export default function Home() {
               </div>
             </div>
             <div className="md:w-1/2">
-              <div className="rounded-lg shadow-xl bg-white h-[400px] flex items-center justify-center overflow-hidden cursor-pointer transition-all duration-200 hover:scale-95 hover:shadow-lg active:scale-90">
+              <div className="rounded-lg shadow-xl bg-white h-[400px] flex items-center justify-center overflow-hidden">
                 <Image 
                   src="/img_pratos_saudaveis.jpeg" 
                   alt="Mesa com comida saudável" 

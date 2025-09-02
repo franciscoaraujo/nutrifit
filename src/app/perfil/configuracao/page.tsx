@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCog, faUser, faVenus, faMars, faRuler, faWeight, faBullseye, faRunning, faSave } from '@fortawesome/free-solid-svg-icons';
+import { faCog, faUser, faVenus, faMars, faRuler, faWeight, faBullseye, faRunning, faSave, faCamera, faUpload } from '@fortawesome/free-solid-svg-icons';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Card from '@/components/ui/Card';
@@ -15,16 +16,19 @@ interface PerfilData {
   peso: string;
   objetivo: 'emagrecimento' | 'manutencao' | 'ganho_massa' | '';
   nivelAtividade: 'sedentario' | 'leve' | 'moderado' | 'ativo' | 'extra' | '';
+  foto?: string;
 }
 
 export default function ConfiguracaoPerfilPage() {
+  const router = useRouter();
   const [perfil, setPerfil] = useState<PerfilData>({
     sexo: '',
     idade: '',
     altura: '',
     peso: '',
     objetivo: '',
-    nivelAtividade: ''
+    nivelAtividade: '',
+    foto: ''
   });
   const [salvando, setSalvando] = useState(false);
   const [salvo, setSalvo] = useState(false);
@@ -34,6 +38,21 @@ export default function ConfiguracaoPerfilPage() {
       ...prev,
       [campo]: valor
     }));
+  };
+
+  const handleFotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setPerfil(prev => ({
+          ...prev,
+          foto: result
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const salvarPerfil = async () => {
@@ -48,8 +67,17 @@ export default function ConfiguracaoPerfilPage() {
     setTimeout(() => {
       setSalvando(false);
       setSalvo(true);
-      setTimeout(() => setSalvo(false), 3000);
-    }, 1000);
+      
+      // Salvar foto no localStorage se existir
+      if (perfil.foto) {
+        localStorage.setItem('fotoPerfil', perfil.foto);
+      }
+      
+      // Redirecionar para a página de perfil após 2 segundos
+      setTimeout(() => {
+        router.push('/dashboard/perfil');
+      }, 2000);
+    }, 2000);
   };
 
   return (
@@ -74,6 +102,48 @@ export default function ConfiguracaoPerfilPage() {
           </h2>
           
           <div className="space-y-8">
+            {/* Foto do Perfil */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-4">
+                Foto do Perfil
+              </label>
+              <div className="flex items-center gap-6">
+                {/* Preview da foto */}
+                <div className="w-24 h-24 rounded-full border-2 border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
+                  {perfil.foto ? (
+                    <img 
+                      src={perfil.foto} 
+                      alt="Foto do perfil" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <FontAwesomeIcon icon={faUser} className="text-gray-400 text-2xl" />
+                  )}
+                </div>
+                
+                {/* Botão de upload */}
+                <div>
+                  <input
+                    type="file"
+                    id="foto-upload"
+                    accept="image/*"
+                    onChange={handleFotoUpload}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="foto-upload"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors cursor-pointer"
+                  >
+                    <FontAwesomeIcon icon={faUpload} />
+                    Escolher Foto
+                  </label>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Formatos aceitos: JPG, PNG, GIF (máx. 5MB)
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Sexo */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-4">
