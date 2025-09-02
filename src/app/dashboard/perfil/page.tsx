@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faEdit, faWeight, faRulerVertical, faCalendarAlt, faHeartbeat } from "@fortawesome/free-solid-svg-icons";
 import MainLayout from "@/components/layout/MainLayout";
@@ -30,9 +31,11 @@ export default function ProfilePage() {
               <div className="flex flex-col items-center text-center mb-6">
                 <div className="w-32 h-32 bg-emerald-100 rounded-full flex items-center justify-center mb-4 overflow-hidden">
                   {fotoPerfil ? (
-                    <img 
+                    <Image 
                       src={fotoPerfil} 
                       alt="Foto do perfil" 
+                      width={128}
+                      height={128}
                       className="w-full h-full object-cover"
                     />
                   ) : (

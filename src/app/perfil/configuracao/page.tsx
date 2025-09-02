@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import MainLayout from '@/components/layout/MainLayout';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCog, faUser, faVenus, faMars, faRuler, faWeight, faBullseye, faRunning, faSave, faUpload } from '@fortawesome/free-solid-svg-icons';
@@ -111,9 +112,11 @@ export default function ConfiguracaoPerfilPage() {
                 {/* Preview da foto */}
                 <div className="w-24 h-24 rounded-full border-2 border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
                   {perfil.foto ? (
-                    <img 
+                    <Image 
                       src={perfil.foto} 
                       alt="Foto do perfil" 
+                      width={96}
+                      height={96}
                       className="w-full h-full object-cover"
                     />
                   ) : (

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Image from 'next/image';
 import MainLayout from '@/components/layout/MainLayout';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChartLine, faRuler, faCalendarAlt, faSave, faPlus, faCamera, faImage, faTimes } from '@fortawesome/free-solid-svg-icons';
@@ -292,9 +293,11 @@ export default function DashboardPage() {
               {fotoCapturada && (
                 <div className="space-y-4">
                   <div className="relative max-w-md">
-                    <img 
+                    <Image 
                       src={fotoCapturada} 
                       alt="Foto capturada" 
+                      width={400}
+                      height={300}
                       className="w-full h-auto rounded-lg border-2 border-emerald-200"
                     />
                     <button 
@@ -360,10 +363,11 @@ export default function DashboardPage() {
                 {medidas.filter(m => m.foto).map((medida) => (
                   <div key={medida.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                     <div className="aspect-square relative">
-                      <img 
-                        src={medida.foto} 
+                      <Image 
+                        src={medida.foto || '/placeholder-image.jpg'} 
                         alt={`Foto de ${new Date(medida.data).toLocaleDateString('pt-BR')}`}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                       />
                     </div>
                     <div className="p-4">

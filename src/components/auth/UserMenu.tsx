@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useUser, useClerk } from '@clerk/nextjs';
 import Link from 'next/link';
+import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faSignOutAlt, faCog, faChartLine } from '@fortawesome/free-solid-svg-icons';
 
@@ -63,9 +64,11 @@ export default function UserMenu() {
         className="flex items-center space-x-2 focus:outline-none"
       >
         {user?.imageUrl ? (
-          <img 
+          <Image 
             src={user.imageUrl} 
             alt="Foto do perfil" 
+            width={32}
+            height={32}
             className="h-8 w-8 rounded-full object-cover border border-gray-200"
           />
         ) : (
@@ -83,9 +86,11 @@ export default function UserMenu() {
           <div className="px-4 py-2 border-b border-gray-100">
             <div className="flex items-center space-x-3">
               {user?.imageUrl ? (
-                <img 
+                <Image 
                   src={user.imageUrl} 
                   alt="Foto do perfil" 
+                  width={40}
+                  height={40}
                   className="h-10 w-10 rounded-full object-cover border border-gray-200"
                 />
               ) : (
