@@ -1,6 +1,6 @@
 'use client';
 
-import Header from './Header';
+import HeaderWrapper from './HeaderWrapper';
 import Footer from './Footer';
 
 interface MainLayoutProps {
@@ -10,7 +10,7 @@ interface MainLayoutProps {
 const MainLayout = ({ children }: MainLayoutProps) => {
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
+      <HeaderWrapper />
       <main className="flex-1">
         {children}
       </main>
