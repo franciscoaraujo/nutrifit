@@ -1,15 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGoogle, faFacebook } from '@fortawesome/free-brands-svg-icons';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/useToast';
 
 export default function RegisterForm() {
   const router = useRouter();
+  const { register } = useAuth();
+  const { showSuccess, showError } = useToast();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -48,50 +51,30 @@ export default function RegisterForm() {
     }
 
     try {
-      // Em um cenário real, aqui você faria uma chamada API para registrar o usuário
-      // Simulando um registro bem-sucedido seguido de login
+      console.log('Tentando registrar usuário...');
       
-      // Exemplo de chamada API (comentado):
-      // const response = await fetch('/api/auth/register', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     name: `${formData.firstName} ${formData.lastName}`,
-      //     email: formData.email,
-      //     password: formData.password,
-      //   }),
-      // });
-      // 
-      // if (!response.ok) {
-      //   const data = await response.json();
-      //   throw new Error(data.message || 'Erro ao registrar');
-      // }
-
-      // Após registro bem-sucedido, fazer login
-      const result = await signIn('credentials', {
-        redirect: false,
-        email: formData.email,
+      const userData = {
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        email: formData.email.trim(),
         password: formData.password,
-      });
+      };
+      
+      console.log('Dados do usuário:', { ...userData, password: '[HIDDEN]' });
+      
+      const success = await register(userData);
 
-      if (result?.error) {
-        setError('Erro ao fazer login após o registro.');
+      if (success) {
+        showSuccess('Conta criada com sucesso! Configure seu perfil para começar.');
+        console.log('Redirecionando para configuração de perfil...');
+        router.push('/perfil/configuracao');
       } else {
-        router.push('/dashboard/perfil');
+        console.error('Falha no registro');
+        setError('Erro ao criar conta. Verifique os dados e tente novamente.');
       }
     } catch (error) {
-      setError('Ocorreu um erro ao registrar. Por favor, tente novamente.');
+      console.error('Erro durante o registro:', error);
+      setError('Ocorreu um erro inesperado. Por favor, tente novamente.');
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSocialLogin = async (provider: string) => {
-    setLoading(true);
-    try {
-      await signIn(provider, { callbackUrl: '/dashboard/perfil' });
-    } catch (error) {
-      setError(`Erro ao fazer login com ${provider}. Por favor, tente novamente.`);
       setLoading(false);
     }
   };
@@ -199,20 +182,20 @@ export default function RegisterForm() {
         <div className="mt-6 grid grid-cols-2 gap-3">
           <button
             type="button"
-            onClick={() => handleSocialLogin('google')}
-            className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+            disabled
+            className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed"
           >
-            <FontAwesomeIcon icon={faGoogle} className="h-5 w-5 text-red-500" />
-            <span className="ml-2">Google</span>
+            <FontAwesomeIcon icon={faGoogle} className="h-5 w-5 text-gray-400" />
+            <span className="ml-2">Google (Em breve)</span>
           </button>
           
           <button
             type="button"
-            onClick={() => handleSocialLogin('facebook')}
-            className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+            disabled
+            className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed"
           >
-            <FontAwesomeIcon icon={faFacebook} className="h-5 w-5 text-blue-600" />
-            <span className="ml-2">Facebook</span>
+            <FontAwesomeIcon icon={faFacebook} className="h-5 w-5 text-gray-400" />
+            <span className="ml-2">Facebook (Em breve)</span>
           </button>
         </div>
       </div>

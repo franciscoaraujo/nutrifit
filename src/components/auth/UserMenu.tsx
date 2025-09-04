@@ -1,20 +1,19 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useUser, useClerk } from '@clerk/nextjs';
+import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faSignOutAlt, faCog, faChartLine } from '@fortawesome/free-solid-svg-icons';
 
 export default function UserMenu() {
-  const { user, isLoaded } = useUser();
-  const { signOut } = useClerk();
+  const { user, isLoading, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const handleLogout = async () => {
-    await signOut();
+  const handleLogout = () => {
+    logout();
   };
 
   // Fechar o menu quando clicar fora dele
@@ -31,7 +30,7 @@ export default function UserMenu() {
     };
   }, []);
 
-  if (!isLoaded) {
+  if (isLoading) {
     return (
       <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse"></div>
     );
@@ -41,14 +40,14 @@ export default function UserMenu() {
     return (
       <div className="flex space-x-2">
         <Link 
-          href="/sign-in"
+          href="/auth/login"
           className="text-sm font-medium text-primary hover:text-primary/80"
         >
           Entrar
         </Link>
         <span className="text-gray-300">|</span>
         <Link 
-          href="/sign-up"
+          href="/auth/register"
           className="text-sm font-medium text-primary hover:text-primary/80"
         >
           Registrar
@@ -63,9 +62,9 @@ export default function UserMenu() {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-2 focus:outline-none"
       >
-        {user?.imageUrl ? (
+        {false ? (
           <Image 
-            src={user.imageUrl} 
+            src="" 
             alt="Foto do perfil" 
             width={32}
             height={32}
@@ -77,7 +76,7 @@ export default function UserMenu() {
           </div>
         )}
         <span className="text-sm font-medium hidden md:block">
-          {user?.firstName || user?.username || 'Usuário'}
+          {user?.name || 'Usuário'}
         </span>
       </button>
 
@@ -85,9 +84,9 @@ export default function UserMenu() {
         <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
           <div className="px-4 py-2 border-b border-gray-100">
             <div className="flex items-center space-x-3">
-              {user?.imageUrl ? (
+              {false ? (
                 <Image 
-                  src={user.imageUrl} 
+                  src="" 
                   alt="Foto do perfil" 
                   width={40}
                   height={40}
@@ -99,8 +98,8 @@ export default function UserMenu() {
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">{user?.firstName || user?.username}</p>
-                <p className="text-xs text-gray-500 truncate">{user?.primaryEmailAddress?.emailAddress}</p>
+                <p className="text-sm font-medium text-gray-900 truncate">{user?.name}</p>
+                <p className="text-xs text-gray-500 truncate">{user?.email}</p>
               </div>
             </div>
           </div>
@@ -121,15 +120,6 @@ export default function UserMenu() {
           >
             <FontAwesomeIcon icon={faChartLine} className="mr-2 h-4 w-4 text-gray-400" />
             Dashboard
-          </Link>
-
-          <Link 
-            href="/dashboard/configuracoes"
-            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center"
-            onClick={() => setIsOpen(false)}
-          >
-            <FontAwesomeIcon icon={faCog} className="mr-2 h-4 w-4 text-gray-400" />
-            Configurações
           </Link>
 
           <button

@@ -1,18 +1,31 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-const isProtectedRoute = createRouteMatcher([
-  '/dashboard(.*)',
-  '/perfil(.*)',
-  '/dietas(.*)',
-  '/receitas(.*)',
-  '/treinamentos(.*)'
-]);
+const protectedRoutes = [
+  '/dashboard',
+  '/perfil',
+  '/dietas',
+  '/receitas',
+  '/treinamentos'
+];
 
-export default clerkMiddleware(async (auth, req) => {
-  if (isProtectedRoute(req)) {
-    await auth.protect();
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  
+  // Verificar se a rota é protegida
+  const isProtectedRoute = protectedRoutes.some(route => 
+    pathname.startsWith(route)
+  );
+  
+  if (isProtectedRoute) {
+    // Como a autenticação é gerenciada no lado do cliente com localStorage,
+    // não podemos verificar a autenticação no middleware.
+    // A verificação será feita nos componentes usando useAuth.
+    // Por enquanto, permitir acesso e deixar os componentes gerenciarem a autenticação.
   }
-});
+  
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [

@@ -4,12 +4,12 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faBell, faTimes } from '@fortawesome/free-solid-svg-icons';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '@/hooks/useAuth';
 import UserMenu from '@/components/auth/UserMenu';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { isLoaded, user } = useUser();
+  const { user, isLoading } = useAuth();
 
   return (
     <header className="bg-[var(--primary)] text-white sticky top-0 z-50 shadow-md">
@@ -22,7 +22,7 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-6">
-            {isLoaded && user ? (
+            {!isLoading && user ? (
               <>
                 <Link href="/dietas" className="text-white hover:text-[var(--secondary)] transition-colors">
                   Dietas
@@ -39,10 +39,10 @@ const Header = () => {
               </>
             ) : (
               <>
-                <Link href="/sign-in" className="text-white hover:text-[var(--secondary)] transition-colors">
+                <Link href="/auth/login" className="text-white hover:text-[var(--secondary)] transition-colors">
                   Login
                 </Link>
-                <Link href="/sign-up" className="text-white hover:text-[var(--secondary)] transition-colors">
+                <Link href="/auth/register" className="text-white hover:text-[var(--secondary)] transition-colors">
                   Cadastro
                 </Link>
               </>
@@ -51,7 +51,7 @@ const Header = () => {
 
           {/* User Actions */}
           <div className="flex items-center space-x-4">
-            {isLoaded && user ? (
+            {!isLoading && user ? (
               <>
                 <button className="text-white hover:text-[var(--secondary)] transition-colors">
                   <FontAwesomeIcon icon={faBell} className="h-5 w-5" />
@@ -73,7 +73,7 @@ const Header = () => {
       {isMenuOpen && (
         <div className="md:hidden bg-[var(--primary-dark)] py-4">
           <nav className="flex flex-col space-y-3 px-4">
-            {isLoaded && user ? (
+            {!isLoading && user ? (
               <>
                 <Link 
                   href="/dashboard" 
@@ -107,7 +107,7 @@ const Header = () => {
             ) : (
               <div className="py-2">
                 <Link 
-                  href="/sign-in" 
+                  href="/auth/login" 
                   className="text-white hover:text-[var(--secondary)] transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -115,7 +115,7 @@ const Header = () => {
                 </Link>
                 <span className="text-gray-300 mx-2">|</span>
                 <Link 
-                  href="/sign-up" 
+                  href="/auth/register" 
                   className="text-white hover:text-[var(--secondary)] transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >

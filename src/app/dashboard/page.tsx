@@ -1,47 +1,248 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import MainLayout from '@/components/layout/MainLayout';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChartLine, faRuler, faCalendarAlt, faSave, faPlus, faCamera, faImage, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faChartLine, faRuler, faCalendarAlt, faSave, faPlus, faCamera, faImage, faTimes, faTrash, faDownload } from '@fortawesome/free-solid-svg-icons';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Card from '@/components/ui/Card';
-
-interface MedidaCorporal {
-  id: string;
-  data: string;
-  bracos: number;
-  busto: number;
-  cintura: number;
-  quadril: number;
-  coxas: number;
-  foto?: string;
-}
+import { MedidaCorporal, MedidaFormData, DashboardStats, FotoProgresso } from '@/types';
+import { dashboardService } from '@/services';
+import { useToast } from '@/hooks/useToast';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function DashboardPage() {
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+  const { showError, showSuccess, showWarning } = useToast();
+
+  // Verificar autenticação
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push('/auth/login?redirect=/dashboard');
+    }
+  }, [isLoading, user, router]);
+
+  // Mostrar loading enquanto verifica autenticação
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-emerald-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Carregando...</p>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Não renderizar nada se não estiver autenticado
+  if (!user) {
+    return null;
+  }
+  
   const [medidas, setMedidas] = useState<MedidaCorporal[]>([]);
-  const [novaMedida, setNovaMedida] = useState({
+  const [novaMedida, setNovaMedida] = useState<MedidaFormData>({
     data: new Date().toISOString().split('T')[0],
     bracos: '',
     busto: '',
     cintura: '',
     quadril: '',
-    coxas: ''
+    coxas: '',
+    observacoes: ''
   });
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [fotoCapturada, setFotoCapturada] = useState<string | null>(null);
+  const [fotosProgresso, setFotosProgresso] = useState<FotoProgresso[]>([]);
   const [mostrarHistoricoFotos, setMostrarHistoricoFotos] = useState(false);
   const [cameraAtiva, setCameraAtiva] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>('');
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const handleInputChange = (campo: string, valor: string) => {
+  // Carregar dados do dashboard
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        setLoading(true);
+        // Em uma aplicação real, o userId viria do contexto de autenticação
+        // Por enquanto, não carregamos dados sem autenticação
+        
+        const [medidasResponse, statsResponse, fotosResponse] = await Promise.all([
+          dashboardService.getMedidas(),
+          dashboardService.getDashboardStats(),
+          dashboardService.getFotosProgresso()
+        ]);
+        
+        if (medidasResponse.success && medidasResponse.data) {
+          setMedidas(medidasResponse.data);
+        }
+        
+        if (statsResponse.success && statsResponse.data) {
+          setDashboardStats(statsResponse.data);
+        }
+        
+        if (fotosResponse.success && fotosResponse.data) {
+          setFotosProgresso(fotosResponse.data);
+        }
+      } catch (err) {
+        setError('Erro ao carregar dados do dashboard');
+        console.error('Erro ao carregar dashboard:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDashboardData();
+  }, []);
+
+  const validateField = (campo: keyof MedidaFormData, valor: string): string => {
+    if (campo === 'data') {
+      if (!valor) {
+        return 'Data é obrigatória';
+      }
+      return '';
+    }
+    
+    if (['bracos', 'busto', 'cintura', 'quadril', 'coxas'].includes(campo)) {
+      if (!valor) {
+        return `${campo.charAt(0).toUpperCase() + campo.slice(1)} é obrigatório`;
+      }
+      
+      const numericValue = parseFloat(valor);
+      if (isNaN(numericValue)) {
+        return `${campo.charAt(0).toUpperCase() + campo.slice(1)} deve ser um número válido`;
+      }
+      
+      if (numericValue <= 0) {
+        return `${campo.charAt(0).toUpperCase() + campo.slice(1)} deve ser maior que zero`;
+      }
+      
+      if (numericValue > 200) {
+        return `${campo.charAt(0).toUpperCase() + campo.slice(1)} deve ser menor que 200 cm`;
+      }
+    }
+    
+    return '';
+  };
+
+  const handleInputChange = (campo: keyof MedidaFormData, valor: string) => {
     setNovaMedida(prev => ({
       ...prev,
       [campo]: valor
     }));
+    
+    // Validação em tempo real
+    const error = validateField(campo, valor);
+    setValidationErrors(prev => ({
+      ...prev,
+      [campo]: error
+    }));
+  };
+
+  const salvarMedida = async () => {
+    // Validar todos os campos
+    const errors: {[key: string]: string} = {};
+    const campos: (keyof MedidaFormData)[] = ['data', 'bracos', 'busto', 'cintura', 'quadril', 'coxas'];
+    
+    campos.forEach(campo => {
+      const error = validateField(campo, novaMedida[campo] || '');
+      if (error) {
+        errors[campo] = error;
+      }
+    });
+    
+    setValidationErrors(errors);
+    
+    if (Object.keys(errors).length > 0) {
+      showError('Por favor, corrija os erros nos campos destacados', 'Erros de validação');
+      return;
+    }
+
+    try {
+      const response = await dashboardService.createMedida(novaMedida);
+      
+      if (response.success && response.data) {
+        setMedidas(prev => [response.data!, ...prev]);
+        setNovaMedida({
+          data: new Date().toISOString().split('T')[0],
+          bracos: '',
+          busto: '',
+          cintura: '',
+          quadril: '',
+          coxas: '',
+          observacoes: ''
+        });
+        setValidationErrors({});
+        setMostrarFormulario(false);
+        showSuccess('Medida salva com sucesso!', 'Sucesso');
+        
+        // Se há foto capturada, fazer upload
+        if (fotoCapturada) {
+          await uploadFotoProgresso(response.data.id);
+        }
+      } else {
+        showError(response.error || 'Erro desconhecido', 'Erro ao salvar medida');
+      }
+    } catch (error) {
+      console.error('Erro ao salvar medida:', error);
+      showError('Erro interno do sistema', 'Erro ao salvar medida');
+    }
+  };
+
+  const uploadFotoProgresso = async (medidaId?: string) => {
+    if (!fotoCapturada) return;
+    
+    try {
+      // Converter base64 para File
+      const response = await fetch(fotoCapturada);
+      const blob = await response.blob();
+      const file = new File([blob], 'foto-progresso.jpg', { type: 'image/jpeg' });
+      
+      const uploadResponse = await dashboardService.uploadFotoProgresso(file, medidaId || '', 'frente');
+      
+      if (uploadResponse.success && uploadResponse.data) {
+        setFotosProgresso(prev => [uploadResponse.data!, ...prev]);
+        setFotoCapturada(null);
+        showSuccess('Foto de progresso salva com sucesso!', 'Sucesso');
+      } else {
+        showError(uploadResponse.error || 'Erro desconhecido', 'Erro ao fazer upload da foto');
+      }
+    } catch (error) {
+      console.error('Erro ao fazer upload da foto:', error);
+      showError('Erro interno do sistema', 'Erro ao fazer upload da foto');
+    }
+  };
+
+  const deletarMedida = async (medidaId: string) => {
+    if (!confirm('Tem certeza que deseja deletar esta medida?')) return;
+    
+    try {
+      const response = await dashboardService.deleteMedida(medidaId);
+      
+      if (response.success) {
+        setMedidas(prev => prev.filter(m => m.id !== medidaId));
+        showSuccess('Medida deletada com sucesso!', 'Sucesso');
+      } else {
+        showError(response.error || 'Erro desconhecido', 'Erro ao deletar medida');
+      }
+    } catch (error) {
+      console.error('Erro ao deletar medida:', error);
+      showError('Erro interno do sistema', 'Erro ao deletar medida');
+    }
+  };
+
+  const exportarDados = () => {
+    const csvContent = dashboardService.exportMedidasCSV(medidas);
+    const filename = `medidas-corporais-${new Date().toISOString().split('T')[0]}.csv`;
+    dashboardService.downloadCSV(csvContent, filename);
   };
 
   const iniciarCamera = async () => {
@@ -53,7 +254,7 @@ export default function DashboardPage() {
       }
     } catch (error) {
       console.error('Erro ao acessar a câmera:', error);
-      alert('Não foi possível acessar a câmera. Verifique as permissões.');
+      showError('Não foi possível acessar a câmera. Verifique as permissões.', 'Erro de câmera');
     }
   };
 
@@ -88,32 +289,44 @@ export default function DashboardPage() {
     setFotoCapturada(null);
   };
 
-  const salvarMedida = () => {
-    if (novaMedida.bracos && novaMedida.busto && novaMedida.cintura && novaMedida.quadril && novaMedida.coxas) {
-      const medida: MedidaCorporal = {
-        id: Date.now().toString(),
-        data: novaMedida.data,
-        bracos: parseFloat(novaMedida.bracos),
-        busto: parseFloat(novaMedida.busto),
-        cintura: parseFloat(novaMedida.cintura),
-        quadril: parseFloat(novaMedida.quadril),
-        coxas: parseFloat(novaMedida.coxas),
-        foto: fotoCapturada || undefined
-      };
-      
-      setMedidas(prev => [medida, ...prev]);
-      setNovaMedida({
-        data: new Date().toISOString().split('T')[0],
-        bracos: '',
-        busto: '',
-        cintura: '',
-        quadril: '',
-        coxas: ''
-      });
-      setFotoCapturada(null);
-      setMostrarFormulario(false);
-    }
-  };
+
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Carregando dados do dashboard...</p>
+            </div>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="text-center">
+              <div className="text-red-500 text-6xl mb-4">⚠️</div>
+              <h2 className="text-xl font-bold text-red-600 mb-2">Erro ao carregar dados</h2>
+              <p className="text-gray-600 mb-4">{error}</p>
+              <Button 
+                variant="primary" 
+                onClick={() => window.location.reload()}
+              >
+                Tentar novamente
+              </Button>
+            </div>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
@@ -144,6 +357,15 @@ export default function DashboardPage() {
               <FontAwesomeIcon icon={faImage} className="mr-2" />
               Histórico de Fotos
             </Button>
+            <Button 
+              variant="outline" 
+              size="md"
+              onClick={exportarDados}
+              disabled={medidas.length === 0}
+            >
+              <FontAwesomeIcon icon={faDownload} className="mr-2" />
+              Exportar
+            </Button>
           </div>
         </div>
 
@@ -166,7 +388,11 @@ export default function DashboardPage() {
                   value={novaMedida.data}
                   onChange={(e) => handleInputChange('data', e.target.value)}
                   fullWidth
+                  className={validationErrors.data ? 'border-red-500 focus:border-red-500' : ''}
                 />
+                {validationErrors.data && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.data}</p>
+                )}
               </div>
               
               <div>
@@ -180,7 +406,11 @@ export default function DashboardPage() {
                   value={novaMedida.bracos}
                   onChange={(e) => handleInputChange('bracos', e.target.value)}
                   fullWidth
+                  className={validationErrors.bracos ? 'border-red-500 focus:border-red-500' : ''}
                 />
+                {validationErrors.bracos && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.bracos}</p>
+                )}
               </div>
               
               <div>
@@ -194,7 +424,11 @@ export default function DashboardPage() {
                   value={novaMedida.busto}
                   onChange={(e) => handleInputChange('busto', e.target.value)}
                   fullWidth
+                  className={validationErrors.busto ? 'border-red-500 focus:border-red-500' : ''}
                 />
+                {validationErrors.busto && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.busto}</p>
+                )}
               </div>
               
               <div>
@@ -208,7 +442,11 @@ export default function DashboardPage() {
                   value={novaMedida.cintura}
                   onChange={(e) => handleInputChange('cintura', e.target.value)}
                   fullWidth
+                  className={validationErrors.cintura ? 'border-red-500 focus:border-red-500' : ''}
                 />
+                {validationErrors.cintura && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.cintura}</p>
+                )}
               </div>
               
               <div>
@@ -222,7 +460,11 @@ export default function DashboardPage() {
                   value={novaMedida.quadril}
                   onChange={(e) => handleInputChange('quadril', e.target.value)}
                   fullWidth
+                  className={validationErrors.quadril ? 'border-red-500 focus:border-red-500' : ''}
                 />
+                {validationErrors.quadril && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.quadril}</p>
+                )}
               </div>
               
               <div>
@@ -236,7 +478,11 @@ export default function DashboardPage() {
                   value={novaMedida.coxas}
                   onChange={(e) => handleInputChange('coxas', e.target.value)}
                   fullWidth
+                  className={validationErrors.coxas ? 'border-red-500 focus:border-red-500' : ''}
                 />
+                {validationErrors.coxas && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.coxas}</p>
+                )}
               </div>
             </div>
             
@@ -318,6 +564,7 @@ export default function DashboardPage() {
                 onClick={() => {
                   setMostrarFormulario(false);
                   setFotoCapturada(null);
+                  setValidationErrors({});
                   pararCamera();
                 }}
               >
@@ -410,6 +657,7 @@ export default function DashboardPage() {
                     <th className="px-4 py-3 text-left text-sm font-medium text-emerald-800">Cintura (cm)</th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-emerald-800">Quadril (cm)</th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-emerald-800">Coxas (cm)</th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-emerald-800">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -423,6 +671,16 @@ export default function DashboardPage() {
                       <td className="px-4 py-3 text-sm text-gray-900">{medida.cintura}</td>
                       <td className="px-4 py-3 text-sm text-gray-900">{medida.quadril}</td>
                       <td className="px-4 py-3 text-sm text-gray-900">{medida.coxas}</td>
+                      <td className="px-4 py-3 text-center">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => deletarMedida(medida.id)}
+                          className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                        >
+                          <FontAwesomeIcon icon={faTrash} />
+                        </Button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
