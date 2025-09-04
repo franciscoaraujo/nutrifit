@@ -31,6 +31,12 @@ const SafeHeader = () => {
             <Link href="/receitas" className="text-white hover:text-[var(--secondary)] transition-colors">
               Receitas
             </Link>
+            <Link href="/sign-in" className="text-white hover:text-[var(--secondary)] transition-colors">
+              Login
+            </Link>
+            <Link href="/sign-up" className="text-white hover:text-[var(--secondary)] transition-colors">
+              Cadastro
+            </Link>
           </nav>
 
           {/* Mobile menu button */}
@@ -58,6 +64,14 @@ const SafeHeader = () => {
               <Link href="/receitas" className="text-white hover:text-[var(--secondary)] transition-colors">
                 Receitas
               </Link>
+              <div className="pt-4 border-t border-emerald-700 mt-4">
+                <Link href="/sign-in" className="text-white hover:text-[var(--secondary)] transition-colors block mb-3">
+                  Login
+                </Link>
+                <Link href="/sign-up" className="text-white hover:text-[var(--secondary)] transition-colors block">
+                  Cadastro
+                </Link>
+              </div>
             </div>
           </nav>
         )}

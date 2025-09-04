@@ -1,15 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGoogle, faFacebook } from '@fortawesome/free-brands-svg-icons';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/useToast';
+import { localStorageService } from '@/services/LocalStorageService';
 
 export default function LoginForm() {
   const router = useRouter();
+  const { login } = useAuth();
+  const { showSuccess, showError } = useToast();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -17,6 +21,41 @@ export default function LoginForm() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const createTestUser = () => {
+    try {
+      const testUser = {
+        id: 'test-user-123',
+        name: 'Usuário Teste',
+        email: 'teste@email.com',
+        password: '123456',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      // Verificar se o usuário já existe
+      const existingUser = localStorageService.findUserByEmail(testUser.email);
+      
+      if (!existingUser) {
+        // Adicionar usuário
+        localStorageService.addUser(testUser);
+        localStorageService.setUserData(testUser.id, testUser);
+        showSuccess('Usuário de teste criado! Email: teste@email.com, Senha: 123456');
+      } else {
+        showSuccess('Usuário de teste já existe! Email: teste@email.com, Senha: 123456');
+      }
+      
+      // Preencher o formulário automaticamente
+      setFormData({
+        email: 'teste@email.com',
+        password: '123456',
+        rememberMe: false
+      });
+    } catch (error) {
+      console.error('Erro ao criar usuário de teste:', error);
+      showError('Erro ao criar usuário de teste');
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -32,30 +71,25 @@ export default function LoginForm() {
     setError('');
 
     try {
-      const result = await signIn('credentials', {
-        redirect: false,
-        email: formData.email,
-        password: formData.password,
-      });
+      const success = await login(formData.email, formData.password);
 
-      if (result?.error) {
-        setError('Credenciais inválidas. Por favor, tente novamente.');
+      if (success) {
+        showSuccess('Login realizado com sucesso!');
+        
+        // Verificar se há uma URL de redirecionamento
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectUrl = urlParams.get('redirect') || '/dashboard';
+        
+        router.push(redirectUrl);
       } else {
-        router.push('/dashboard/perfil');
+        setError('Credenciais inválidas. Por favor, tente novamente.');
+        showError('Erro ao fazer login. Verifique suas credenciais.');
       }
     } catch (error) {
-      setError('Ocorreu um erro ao fazer login. Por favor, tente novamente.');
+      console.error('Erro no login:', error);
+      setError('Erro interno. Tente novamente mais tarde.');
+      showError('Erro interno. Tente novamente mais tarde.');
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSocialLogin = async (provider: string) => {
-    setLoading(true);
-    try {
-      await signIn(provider, { callbackUrl: '/dashboard/perfil' });
-    } catch (error) {
-      setError(`Erro ao fazer login com ${provider}. Por favor, tente novamente.`);
       setLoading(false);
     }
   };
@@ -114,6 +148,16 @@ export default function LoginForm() {
         <Button type="submit" variant="primary" fullWidth disabled={loading}>
           {loading ? 'Entrando...' : 'Entrar'}
         </Button>
+        
+        <Button 
+          type="button" 
+          variant="secondary" 
+          fullWidth 
+          onClick={createTestUser}
+          className="mt-2"
+        >
+          Criar Usuário de Teste
+        </Button>
       </form>
       
       <div className="mt-6">
@@ -131,20 +175,20 @@ export default function LoginForm() {
         <div className="mt-6 grid grid-cols-2 gap-3">
           <button
             type="button"
-            onClick={() => handleSocialLogin('google')}
-            className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+            disabled
+            className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed"
           >
-            <FontAwesomeIcon icon={faGoogle} className="h-5 w-5 text-red-500" />
-            <span className="ml-2">Google</span>
+            <FontAwesomeIcon icon={faGoogle} className="h-5 w-5 text-gray-400" />
+            <span className="ml-2">Google (Em breve)</span>
           </button>
           
           <button
             type="button"
-            onClick={() => handleSocialLogin('facebook')}
-            className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+            disabled
+            className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed"
           >
-            <FontAwesomeIcon icon={faFacebook} className="h-5 w-5 text-blue-600" />
-            <span className="ml-2">Facebook</span>
+            <FontAwesomeIcon icon={faFacebook} className="h-5 w-5 text-gray-400" />
+            <span className="ml-2">Facebook (Em breve)</span>
           </button>
         </div>
       </div>

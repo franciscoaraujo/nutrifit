@@ -1,25 +1,25 @@
 'use client';
 
 import { useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faAppleAlt, faDumbbell, faUtensils, faHeartbeat } from "@fortawesome/free-solid-svg-icons";
+import { faAppleAlt, faDumbbell, faUtensils, faHeartbeat, faCheck, faStar, faCrown } from "@fortawesome/free-solid-svg-icons";
 import MainLayout from "@/components/layout/MainLayout";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 
 export default function Home() {
-  const { isLoaded, user } = useUser();
+  const { user, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (isLoaded && user) {
-      router.push('/receitas');
+    if (!isLoading && user) {
+      router.push('/dashboard');
     }
-  }, [isLoaded, user, router]);
+  }, [isLoading, user, router]);
   return (
     <MainLayout>
       {/* Hero Section */}
@@ -152,6 +152,132 @@ export default function Home() {
                 </div>
               </div>
               <p className="text-gray-600 italic">&quot;Não buscava apenas perder peso, mas melhorar minha saúde. Com o NutriFit, meus exames melhoraram e tenho muito mais disposição.&quot;</p>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4 text-emerald-800 font-serif">Escolha seu Plano</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">Encontre o plano perfeito para suas necessidades e comece sua jornada de transformação hoje mesmo.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {/* Plano Gratuito */}
+            <Card className="p-8 text-center relative flex flex-col h-full">
+              <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                <FontAwesomeIcon icon={faAppleAlt} className="text-gray-600 text-2xl" />
+              </div>
+              <h3 className="text-2xl font-bold mb-2 text-gray-800">Gratuito</h3>
+              <div className="mb-6">
+                <span className="text-4xl font-bold text-gray-800">R$ 0</span>
+                <span className="text-gray-500">/mês</span>
+              </div>
+              <ul className="text-left mb-8 space-y-3 flex-grow">
+                <li className="flex items-center">
+                  <FontAwesomeIcon icon={faCheck} className="text-emerald-600 mr-3 flex-shrink-0" />
+                  <span>Acesso básico a receitas</span>
+                </li>
+                <li className="flex items-center">
+                  <FontAwesomeIcon icon={faCheck} className="text-emerald-600 mr-3 flex-shrink-0" />
+                  <span>Planos de dieta simples</span>
+                </li>
+                <li className="flex items-center">
+                  <FontAwesomeIcon icon={faCheck} className="text-emerald-600 mr-3 flex-shrink-0" />
+                  <span>Comunidade de apoio</span>
+                </li>
+              </ul>
+              <div className="mt-auto">
+                <Link href="/auth/register">
+                  <Button variant="outline" className="w-full">
+                    Começar Grátis
+                  </Button>
+                </Link>
+              </div>
+            </Card>
+
+            {/* Plano Premium */}
+            <Card className="p-8 text-center relative border-2 border-emerald-500 shadow-lg flex flex-col h-full">
+              <div className="absolute top-2 right-2">
+                <span className="bg-emerald-500 text-white px-2 py-1 rounded text-xs font-semibold">Mais Popular</span>
+              </div>
+              <div className="bg-emerald-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                <FontAwesomeIcon icon={faStar} className="text-emerald-600 text-2xl" />
+              </div>
+              <h3 className="text-2xl font-bold mb-2 text-emerald-800">Premium</h3>
+              <div className="mb-6">
+                <span className="text-4xl font-bold text-emerald-800">R$ 18,99</span>
+                <span className="text-gray-500">/mês</span>
+              </div>
+              <ul className="text-left mb-8 space-y-3 flex-grow">
+                <li className="flex items-center">
+                  <FontAwesomeIcon icon={faCheck} className="text-emerald-600 mr-3 flex-shrink-0" />
+                  <span>Tudo do plano gratuito</span>
+                </li>
+                <li className="flex items-center">
+                  <FontAwesomeIcon icon={faCheck} className="text-emerald-600 mr-3 flex-shrink-0" />
+                  <span>Dietas personalizadas</span>
+                </li>
+                <li className="flex items-center">
+                  <FontAwesomeIcon icon={faCheck} className="text-emerald-600 mr-3 flex-shrink-0" />
+                  <span>Planos de treino básicos</span>
+                </li>
+                <li className="flex items-center">
+                  <FontAwesomeIcon icon={faCheck} className="text-emerald-600 mr-3 flex-shrink-0" />
+                  <span>Acompanhamento semanal</span>
+                </li>
+              </ul>
+              <div className="mt-auto">
+                <Link href="/auth/register">
+                  <Button variant="primary" className="w-full">
+                    Assinar Premium
+                  </Button>
+                </Link>
+              </div>
+            </Card>
+
+            {/* Plano Pro */}
+            <Card className="p-8 text-center relative flex flex-col h-full">
+              <div className="bg-amber-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                <FontAwesomeIcon icon={faCrown} className="text-amber-600 text-2xl" />
+              </div>
+              <h3 className="text-2xl font-bold mb-2 text-amber-800">Pro</h3>
+              <div className="mb-6">
+                <span className="text-4xl font-bold text-amber-800">R$ 29,90</span>
+                <span className="text-gray-500">/mês</span>
+              </div>
+              <ul className="text-left mb-8 space-y-3 flex-grow">
+                <li className="flex items-center">
+                  <FontAwesomeIcon icon={faCheck} className="text-emerald-600 mr-3 flex-shrink-0" />
+                  <span>Tudo do plano Premium</span>
+                </li>
+                <li className="flex items-center">
+                  <FontAwesomeIcon icon={faCheck} className="text-emerald-600 mr-3 flex-shrink-0" />
+                  <span>Consultoria nutricional</span>
+                </li>
+                <li className="flex items-center">
+                  <FontAwesomeIcon icon={faCheck} className="text-emerald-600 mr-3 flex-shrink-0" />
+                  <span>Treinos personalizados</span>
+                </li>
+                <li className="flex items-center">
+                  <FontAwesomeIcon icon={faCheck} className="text-emerald-600 mr-3 flex-shrink-0" />
+                  <span>Suporte prioritário 24/7</span>
+                </li>
+                <li className="flex items-center">
+                  <FontAwesomeIcon icon={faCheck} className="text-emerald-600 mr-3 flex-shrink-0" />
+                  <span>Relatórios detalhados</span>
+                </li>
+              </ul>
+              <div className="mt-auto">
+                <Link href="/auth/register">
+                  <Button variant="secondary" className="w-full">
+                    Assinar Pro
+                  </Button>
+                </Link>
+              </div>
             </Card>
           </div>
         </div>

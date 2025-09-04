@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
-import { ClerkProvider } from '@clerk/nextjs';
+import { ToastProvider } from '@/providers/ToastProvider';
+import { AuthProvider } from '@/hooks/useAuth';
 
 const inter = Inter({
   variable: "--font-inter",
@@ -31,13 +32,11 @@ export default function RootLayout({
         className={`${inter.variable} ${playfair.variable} antialiased`}
         suppressHydrationWarning={true}
       >
-        {process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ? (
-          <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
+        <AuthProvider>
+          <ToastProvider>
             {children}
-          </ClerkProvider>
-        ) : (
-          children
-        )}
+          </ToastProvider>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import MainLayout from '@/components/layout/MainLayout';
@@ -9,36 +9,114 @@ import { faCog, faUser, faVenus, faMars, faRuler, faWeight, faBullseye, faRunnin
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Card from '@/components/ui/Card';
+import { PerfilFormData, Sexo, Objetivo, NivelAtividade } from '@/types';
+import { useToast } from '@/hooks/useToast';
+import { localStorageService } from '@/services/LocalStorageService';
+import { progressoService } from '@/services';
+import { useAuth } from '@/hooks/useAuth';
 
-interface PerfilData {
-  sexo: 'feminino' | 'masculino' | '';
-  idade: string;
-  altura: string;
-  peso: string;
-  objetivo: 'emagrecimento' | 'manutencao' | 'ganho_massa' | '';
-  nivelAtividade: 'sedentario' | 'leve' | 'moderado' | 'ativo' | 'extra' | '';
-  foto?: string;
-}
+type PerfilData = PerfilFormData;
 
 export default function ConfiguracaoPerfilPage() {
   const router = useRouter();
+  const { showError, showSuccess } = useToast();
+  const { user } = useAuth();
+
   const [perfil, setPerfil] = useState<PerfilData>({
+    nome: '',
     sexo: '',
-    idade: '',
-    altura: '',
-    peso: '',
+    idade: 0,
+    altura: 0,
+    peso: 0,
     objetivo: '',
     nivelAtividade: '',
+    dietas: [],
     foto: ''
   });
   const [salvando, setSalvando] = useState(false);
   const [salvo, setSalvo] = useState(false);
+  const [erros, setErros] = useState<Record<string, string>>({});
+
+
+  // Carregar dados salvos do localStorage quando a página for carregada
+  useEffect(() => {
+    const carregarDadosSalvos = () => {
+      const currentUserId = localStorageService.getCurrentUserId();
+      if (!currentUserId) {
+        console.warn('Usuário não está logado');
+        return;
+      }
+      
+      // Carregar dados de configuração do perfil específico do usuário
+    const configSalva = localStorageService.getItem<PerfilFormData>(`perfilConfiguracao_${currentUserId}`);
+    if (configSalva) {
+      try {
+        setPerfil(prev => ({
+          ...prev,
+          sexo: configSalva.sexo || '',
+          idade: configSalva.idade || 0,
+          altura: configSalva.altura || 0,
+          peso: configSalva.peso || 0,
+          objetivo: configSalva.objetivo || '',
+          nivelAtividade: configSalva?.nivelAtividade || ''
+        }));
+      } catch (error) {
+        console.error('Erro ao carregar configuração do perfil:', error);
+      }
+    }
+
+      // Carregar foto do perfil específica do usuário
+      const fotoSalva = localStorageService.getItem(`fotoPerfil_${currentUserId}`);
+      if (fotoSalva) {
+        setPerfil((prev: PerfilFormData): PerfilFormData => ({
+          ...prev,
+          foto: fotoSalva as string
+        }));
+      }
+
+
+    };
+
+    carregarDadosSalvos();
+  }, []);
+
+
 
   const handleInputChange = (campo: keyof PerfilData, valor: string) => {
     setPerfil(prev => ({
       ...prev,
-      [campo]: valor
+      [campo]: campo === 'idade' || campo === 'altura' || campo === 'peso' ? Number(valor) || 0 : valor
     }));
+    
+    // Limpar erro do campo quando o usuário começar a digitar
+    if (erros[campo]) {
+      setErros(prev => {
+        const novosErros = { ...prev };
+        delete novosErros[campo];
+        return novosErros;
+      });
+    }
+  };
+
+  const handleDietaToggle = (dieta: string) => {
+    setPerfil(prev => {
+      const dietasAtuais = prev.dietas || [];
+      const dietaJaSelecionada = dietasAtuais.includes(dieta);
+      
+      if (dietaJaSelecionada) {
+        // Remove a dieta se já estiver selecionada
+        return {
+          ...prev,
+          dietas: dietasAtuais.filter(d => d !== dieta)
+        };
+      } else {
+        // Adiciona a dieta se não estiver selecionada
+        return {
+          ...prev,
+          dietas: [...dietasAtuais, dieta]
+        };
+      }
+    });
   };
 
   const handleFotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,9 +134,53 @@ export default function ConfiguracaoPerfilPage() {
     }
   };
 
+  const validarCampos = () => {
+    const novosErros: Record<string, string> = {};
+    
+    if (!perfil.sexo) {
+      novosErros.sexo = 'Sexo é obrigatório';
+    }
+    
+    if (!perfil.idade || perfil.idade <= 0) {
+      novosErros.idade = 'Idade é obrigatória';
+    } else if (perfil.idade > 120) {
+      novosErros.idade = 'Idade deve ser um número válido entre 1 e 120';
+    }
+    
+    if (!perfil.altura || perfil.altura <= 0) {
+      novosErros.altura = 'Altura é obrigatória';
+    } else if (perfil.altura > 300) {
+      novosErros.altura = 'Altura deve ser um número válido entre 1 e 300 cm';
+    }
+    
+    if (!perfil.peso || perfil.peso <= 0) {
+      novosErros.peso = 'Peso é obrigatório';
+    } else if (perfil.peso > 500) {
+      novosErros.peso = 'Peso deve ser um número válido entre 1 e 500 kg';
+    }
+    
+    if (!perfil.objetivo) {
+      novosErros.objetivo = 'Objetivo é obrigatório';
+    }
+    
+    if (!perfil.nivelAtividade) {
+      novosErros.nivelAtividade = 'Nível de atividade é obrigatório';
+    }
+    
+    setErros(novosErros);
+    return Object.keys(novosErros).length === 0;
+  };
+
   const salvarPerfil = async () => {
-    if (!perfil.sexo || !perfil.idade || !perfil.altura || !perfil.peso || !perfil.objetivo || !perfil.nivelAtividade) {
-      alert('Por favor, preencha todos os campos obrigatórios.');
+    if (!validarCampos()) {
+      showError('Por favor, corrija os erros nos campos destacados.', 'Erro de validação');
+      return;
+    }
+
+    const currentUserId = localStorageService.getCurrentUserId();
+    
+    if (!currentUserId) {
+      showError('Usuário não está logado', 'Erro de autenticação');
       return;
     }
 
@@ -68,11 +190,28 @@ export default function ConfiguracaoPerfilPage() {
     setTimeout(() => {
       setSalvando(false);
       setSalvo(true);
+      showSuccess('Perfil salvo com sucesso! Redirecionando...', 'Sucesso');
       
-      // Salvar foto no localStorage se existir
+      // Salvar dados do perfil no localStorage específico do usuário
       if (perfil.foto) {
-        localStorage.setItem('fotoPerfil', perfil.foto);
+        localStorageService.setItem(`fotoPerfil_${currentUserId}`, perfil.foto);
       }
+      
+      // Salvar todos os dados de configuração do perfil específico do usuário
+      const dadosConfiguracao = {
+        sexo: perfil.sexo,
+        idade: perfil.idade,
+        altura: perfil.altura,
+        peso: perfil.peso,
+        objetivo: perfil.objetivo,
+        nivelAtividade: perfil.nivelAtividade
+      };
+      localStorageService.setItem(`perfilConfiguracao_${currentUserId}`, dadosConfiguracao);
+      
+
+      
+      // Disparar evento customizado para notificar outras páginas
+      window.dispatchEvent(new Event('localStorageUpdate'));
       
       // Redirecionar para a página de perfil após 2 segundos
       setTimeout(() => {
@@ -165,6 +304,8 @@ export default function ConfiguracaoPerfilPage() {
                   <div className={`flex items-center gap-3 px-6 py-4 rounded-lg border-2 transition-all ${
                     perfil.sexo === 'feminino' 
                       ? 'border-emerald-500 bg-emerald-50 text-emerald-700' 
+                      : erros.sexo
+                      ? 'border-red-500 bg-red-50 text-red-700'
                       : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-300'
                   }`}>
                     <FontAwesomeIcon icon={faVenus} className="text-xl" />
@@ -184,6 +325,8 @@ export default function ConfiguracaoPerfilPage() {
                   <div className={`flex items-center gap-3 px-6 py-4 rounded-lg border-2 transition-all ${
                     perfil.sexo === 'masculino' 
                       ? 'border-emerald-500 bg-emerald-50 text-emerald-700' 
+                      : erros.sexo
+                      ? 'border-red-500 bg-red-50 text-red-700'
                       : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-300'
                   }`}>
                     <FontAwesomeIcon icon={faMars} className="text-xl" />
@@ -191,6 +334,9 @@ export default function ConfiguracaoPerfilPage() {
                   </div>
                 </label>
               </div>
+              {erros.sexo && (
+                <p className="text-red-500 text-sm mt-2">{erros.sexo}</p>
+              )}
             </div>
 
             {/* Dados Físicos */}
@@ -207,7 +353,11 @@ export default function ConfiguracaoPerfilPage() {
                   fullWidth
                   min="10"
                   max="100"
+                  className={erros.idade ? 'border-red-500' : ''}
                 />
+                {erros.idade && (
+                  <p className="text-red-500 text-sm mt-1">{erros.idade}</p>
+                )}
               </div>
               
               <div>
@@ -223,7 +373,11 @@ export default function ConfiguracaoPerfilPage() {
                   fullWidth
                   min="100"
                   max="250"
+                  className={erros.altura ? 'border-red-500' : ''}
                 />
+                {erros.altura && (
+                  <p className="text-red-500 text-sm mt-1">{erros.altura}</p>
+                )}
               </div>
               
               <div>
@@ -238,9 +392,13 @@ export default function ConfiguracaoPerfilPage() {
                   value={perfil.peso}
                   onChange={(e) => handleInputChange('peso', e.target.value)}
                   fullWidth
+                  className={erros.peso ? 'border-red-500' : ''}
                   min="30"
                   max="300"
                 />
+                {erros.peso && (
+                  <p className="text-red-500 text-sm mt-1">{erros.peso}</p>
+                )}
               </div>
             </div>
 
@@ -263,6 +421,8 @@ export default function ConfiguracaoPerfilPage() {
                   <div className={`w-full text-center px-4 py-4 rounded-lg border-2 transition-all ${
                     perfil.objetivo === 'emagrecimento' 
                       ? 'border-emerald-500 bg-emerald-50 text-emerald-700' 
+                      : erros.objetivo
+                      ? 'border-red-500 bg-red-50 text-red-700'
                       : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-300'
                   }`}>
                     <div className="font-medium">Emagrecimento</div>
@@ -282,6 +442,8 @@ export default function ConfiguracaoPerfilPage() {
                   <div className={`w-full text-center px-4 py-4 rounded-lg border-2 transition-all ${
                     perfil.objetivo === 'manutencao' 
                       ? 'border-emerald-500 bg-emerald-50 text-emerald-700' 
+                      : erros.objetivo
+                      ? 'border-red-500 bg-red-50 text-red-700'
                       : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-300'
                   }`}>
                     <div className="font-medium">Manutenção</div>
@@ -301,6 +463,8 @@ export default function ConfiguracaoPerfilPage() {
                   <div className={`w-full text-center px-4 py-4 rounded-lg border-2 transition-all ${
                     perfil.objetivo === 'ganho_massa' 
                       ? 'border-emerald-500 bg-emerald-50 text-emerald-700' 
+                      : erros.objetivo
+                      ? 'border-red-500 bg-red-50 text-red-700'
                       : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-300'
                   }`}>
                     <div className="font-medium">Ganho de Massa</div>
@@ -308,6 +472,9 @@ export default function ConfiguracaoPerfilPage() {
                   </div>
                 </label>
               </div>
+              {erros.objetivo && (
+                <p className="text-red-500 text-sm mt-2">{erros.objetivo}</p>
+              )}
             </div>
 
             {/* Nível de Atividade */}
@@ -329,6 +496,8 @@ export default function ConfiguracaoPerfilPage() {
                   <div className={`w-full flex items-center justify-between px-4 py-3 rounded-lg border-2 transition-all ${
                     perfil.nivelAtividade === 'sedentario' 
                       ? 'border-emerald-500 bg-emerald-50 text-emerald-700' 
+                      : erros.nivelAtividade
+                      ? 'border-red-500 bg-red-50 text-red-700'
                       : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-300'
                   }`}>
                     <div>
@@ -349,7 +518,9 @@ export default function ConfiguracaoPerfilPage() {
                   />
                   <div className={`w-full flex items-center justify-between px-4 py-3 rounded-lg border-2 transition-all ${
                     perfil.nivelAtividade === 'leve' 
-                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700' 
+                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                      : erros.nivelAtividade
+                      ? 'border-red-500 bg-red-50 text-red-700' 
                       : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-300'
                   }`}>
                     <div>
@@ -371,6 +542,8 @@ export default function ConfiguracaoPerfilPage() {
                   <div className={`w-full flex items-center justify-between px-4 py-3 rounded-lg border-2 transition-all ${
                     perfil.nivelAtividade === 'moderado' 
                       ? 'border-emerald-500 bg-emerald-50 text-emerald-700' 
+                      : erros.nivelAtividade
+                      ? 'border-red-500 bg-red-50 text-red-700'
                       : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-300'
                   }`}>
                     <div>
@@ -392,6 +565,8 @@ export default function ConfiguracaoPerfilPage() {
                   <div className={`w-full flex items-center justify-between px-4 py-3 rounded-lg border-2 transition-all ${
                     perfil.nivelAtividade === 'ativo' 
                       ? 'border-emerald-500 bg-emerald-50 text-emerald-700' 
+                      : erros.nivelAtividade
+                      ? 'border-red-500 bg-red-50 text-red-700'
                       : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-300'
                   }`}>
                     <div>
@@ -412,7 +587,9 @@ export default function ConfiguracaoPerfilPage() {
                   />
                   <div className={`w-full flex items-center justify-between px-4 py-3 rounded-lg border-2 transition-all ${
                     perfil.nivelAtividade === 'extra' 
-                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700' 
+                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                      : erros.nivelAtividade
+                      ? 'border-red-500 bg-red-50 text-red-700' 
                       : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-300'
                   }`}>
                     <div>
@@ -422,7 +599,12 @@ export default function ConfiguracaoPerfilPage() {
                   </div>
                 </label>
               </div>
+              {erros.nivelAtividade && (
+                <p className="text-red-500 text-sm mt-2">{erros.nivelAtividade}</p>
+              )}
             </div>
+
+
 
             {/* Botão Salvar */}
             <div className="flex justify-end pt-6 border-t">
@@ -470,6 +652,7 @@ export default function ConfiguracaoPerfilPage() {
                   <li>• <strong>Personalização:</strong> Recomendações específicas para você</li>
                 </ul>
               </div>
+
             </div>
           </Card>
         </div>
