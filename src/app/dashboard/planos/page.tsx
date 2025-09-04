@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 import { progressoService } from '@/services/ProgressoService';
-import { Plano } from '@/types/user';
+import { Plano, PlanoAtivo } from '@/types/user';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function EscolhaPlanoPage() {
@@ -14,6 +14,14 @@ export default function EscolhaPlanoPage() {
   const { user } = useAuth();
   const [selectedPlano, setSelectedPlano] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [planoAtivo, setPlanoAtivo] = useState<PlanoAtivo | null>(null);
+
+  useEffect(() => {
+    if (user?.id) {
+      const plano = progressoService.getPlanoAtivo(user.id);
+      setPlanoAtivo(plano);
+    }
+  }, [user]);
 
   const planos = progressoService.getPlanos();
   const planosDieta = planos.filter(p => p.tipo === 'dieta');
@@ -52,21 +60,35 @@ export default function EscolhaPlanoPage() {
     }
   };
 
-  const PlanoCard = ({ plano }: { plano: Plano }) => (
-    <Card className={`p-6 cursor-pointer transition-all hover:shadow-lg ${
-      selectedPlano === plano.id ? 'ring-2 ring-emerald-500 bg-emerald-50' : ''
-    }`} onClick={() => setSelectedPlano(plano.id)}>
-      <div className="flex justify-between items-start mb-4">
-        <h3 className="font-bold text-xl text-gray-900">{plano.nome}</h3>
-        <div className="flex gap-2">
-          <Badge className={getTipoColor(plano.tipo)}>
-            {plano.tipo === 'dieta' ? 'Dieta' : plano.tipo === 'jejum' ? 'Jejum' : 'Combinado'}
-          </Badge>
-          <Badge className={getDificuldadeColor(plano.dificuldade)}>
-            {plano.dificuldade}
-          </Badge>
+  const isPlanoAtivo = (planoId: string) => {
+    return planoAtivo?.plano.id === planoId;
+  };
+
+  const PlanoCard = ({ plano }: { plano: Plano }) => {
+    const ativo = isPlanoAtivo(plano.id);
+    
+    return (
+      <Card className={`p-6 cursor-pointer transition-all hover:shadow-lg ${
+        selectedPlano === plano.id ? 'ring-2 ring-emerald-500 bg-emerald-50' : ''
+      } ${
+        ativo ? 'ring-2 ring-green-500 bg-green-50 border-green-200' : ''
+      }`} onClick={() => !ativo && setSelectedPlano(plano.id)}>
+        <div className="flex justify-between items-start mb-4">
+          <h3 className="font-bold text-xl text-gray-900">{plano.nome}</h3>
+          <div className="flex gap-2">
+            {ativo && (
+              <Badge className="bg-green-100 text-green-800 border-green-300">
+                ✓ Ativo
+              </Badge>
+            )}
+            <Badge className={getTipoColor(plano.tipo)}>
+              {plano.tipo === 'dieta' ? 'Dieta' : plano.tipo === 'jejum' ? 'Jejum' : 'Combinado'}
+            </Badge>
+            <Badge className={getDificuldadeColor(plano.dificuldade)}>
+              {plano.dificuldade}
+            </Badge>
+          </div>
         </div>
-      </div>
       
       <p className="text-gray-600 mb-4">{plano.descricao}</p>
       
@@ -91,20 +113,35 @@ export default function EscolhaPlanoPage() {
         </ul>
       </div>
       
-      {selectedPlano === plano.id && (
-        <Button 
-          onClick={(e) => {
-            e.stopPropagation();
-            handleAtivarPlano(plano.id);
-          }}
-          disabled={loading}
-          className="w-full bg-emerald-600 hover:bg-emerald-700"
-        >
-          {loading ? 'Ativando...' : 'Ativar Plano'}
-        </Button>
-      )}
-    </Card>
-  );
+        {ativo ? (
+          <div className="mt-4">
+            <Button 
+              disabled
+              className="w-full bg-green-600 text-white cursor-not-allowed opacity-75"
+            >
+              ✓ Plano Ativo
+            </Button>
+            <p className="text-center text-sm text-green-600 mt-2">
+              Semana {planoAtivo?.semanaAtual} de {planoAtivo?.plano.duracao}
+            </p>
+          </div>
+        ) : (
+          selectedPlano === plano.id && (
+            <Button 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleAtivarPlano(plano.id);
+              }}
+              disabled={loading}
+              className="w-full bg-emerald-600 hover:bg-emerald-700"
+            >
+              {loading ? 'Ativando...' : 'Ativar Plano'}
+            </Button>
+          )
+        )}
+      </Card>
+    );
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
