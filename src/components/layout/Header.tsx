@@ -4,12 +4,15 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faBell, faTimes } from '@fortawesome/free-solid-svg-icons';
-import { useAuth } from '@/hooks/useAuth';
+import { useUser, SignInButton, SignUpButton } from '@clerk/nextjs';
 import UserMenu from '@/components/auth/UserMenu';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, isLoading } = useAuth();
+  const { user, isLoaded } = useUser();
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const [isSigningUp, setIsSigningUp] = useState(false);
 
   return (
     <header className="bg-[var(--primary)] text-white sticky top-0 z-50 shadow-md">
@@ -20,45 +23,60 @@ const Header = () => {
             <h1 className="text-2xl font-bold font-serif">Nutri<span className="text-[var(--secondary)]">Fit</span></h1>
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation 
           <nav className="hidden md:flex space-x-6">
-            {!isLoading && user ? (
+            {isLoaded && user ? (
               <>
-                <Link href="/dietas" className="text-white hover:text-[var(--secondary)] transition-colors">
-                  Dietas
-                </Link>
-                <Link href="/treinamentos" className="text-white hover:text-[var(--secondary)] transition-colors">
-                  Treinamentos
-                </Link>
-                <Link href="/receitas" className="text-white hover:text-[var(--secondary)] transition-colors">
-                  Receitas
-                </Link>
-                <Link href="/dashboard" className="text-white hover:text-[var(--secondary)] transition-colors">
-                  Dashboard
+                <Link href="/perfil" className="text-white hover:text-[var(--secondary)] transition-colors">
+                  Meu Perfil
                 </Link>
               </>
             ) : (
               <>
-                <Link href="/auth/login" className="text-white hover:text-[var(--secondary)] transition-colors">
-                  Login
-                </Link>
-                <Link href="/auth/register" className="text-white hover:text-[var(--secondary)] transition-colors">
-                  Cadastro
-                </Link>
+                <SignInButton mode="modal">
+                  <button className="text-white hover:text-[var(--secondary)] transition-colors">
+                    Sign In
+                  </button>
+                </SignInButton>
+                
               </>
             )}
-          </nav>
+          </nav>  Fim da Navbar */}
 
           {/* User Actions */}
           <div className="flex items-center space-x-4">
-            {!isLoading && user ? (
+            {isLoaded && user ? (
               <>
                 <button className="text-white hover:text-[var(--secondary)] transition-colors">
                   <FontAwesomeIcon icon={faBell} className="h-5 w-5" />
                 </button>
                 <UserMenu />
               </>
-            ) : null}
+            ) : (
+              <div className="flex items-center space-x-4">
+                <SignInButton mode="modal">
+                  <button 
+                    className="text-white hover:text-[var(--secondary)] transition-colors flex items-center space-x-2 disabled:opacity-50"
+                    onClick={() => setIsSigningIn(true)}
+                    disabled={isSigningIn}
+                  >
+                    {isSigningIn && <LoadingSpinner size="sm" color="white" />}
+                    <span>Sign In</span>
+                  </button>
+                </SignInButton>
+
+                <SignUpButton mode="modal">
+                  <button 
+                    className="text-white hover:text-[var(--secondary)] transition-colors flex items-center space-x-2 disabled:opacity-50"
+                    onClick={() => setIsSigningUp(true)}
+                    disabled={isSigningUp}
+                  >
+                    {isSigningUp && <LoadingSpinner size="sm" color="white" />}
+                    <span>Sign Up</span>
+                  </button>
+                </SignUpButton>
+              </div>
+            )}
             <button 
               className="md:hidden text-white hover:text-[var(--secondary)] transition-colors"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -73,54 +91,44 @@ const Header = () => {
       {isMenuOpen && (
         <div className="md:hidden bg-[var(--primary-dark)] py-4">
           <nav className="flex flex-col space-y-3 px-4">
-            {!isLoading && user ? (
+            {isLoaded && user ? (
               <>
                 <Link 
-                  href="/dashboard" 
+                  href="/perfil" 
                   className="text-white hover:text-[var(--secondary)] transition-colors py-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Dashboard
-                </Link>
-                <Link 
-                  href="/dietas" 
-                  className="text-white hover:text-[var(--secondary)] transition-colors py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Dietas
-                </Link>
-                <Link 
-                  href="/treinamentos" 
-                  className="text-white hover:text-[var(--secondary)] transition-colors py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Treinamentos
-                </Link>
-                <Link 
-                  href="/receitas" 
-                  className="text-white hover:text-[var(--secondary)] transition-colors py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Receitas
+                  Meu Perfil
                 </Link>
               </>
             ) : (
-              <div className="py-2">
-                <Link 
-                  href="/auth/login" 
-                  className="text-white hover:text-[var(--secondary)] transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Login
-                </Link>
-                <span className="text-gray-300 mx-2">|</span>
-                <Link 
-                  href="/auth/register" 
-                  className="text-white hover:text-[var(--secondary)] transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Cadastro
-                </Link>
+              <div className="py-2 space-y-3">
+                <SignInButton mode="modal">
+                  <button 
+                    className="text-white hover:text-[var(--secondary)] transition-colors flex items-center space-x-2 disabled:opacity-50"
+                    onClick={() => {
+                      setIsSigningIn(true);
+                      setIsMenuOpen(false);
+                    }}
+                    disabled={isSigningIn}
+                  >
+                    {isSigningIn && <LoadingSpinner size="sm" color="white" />}
+                    <span>Sign In</span>
+                  </button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <button 
+                    className="text-white hover:text-[var(--secondary)] transition-colors flex items-center space-x-2 disabled:opacity-50"
+                    onClick={() => {
+                      setIsSigningUp(true);
+                      setIsMenuOpen(false);
+                    }}
+                    disabled={isSigningUp}
+                  >
+                    {isSigningUp && <LoadingSpinner size="sm" color="white" />}
+                    <span>Sign Up</span>
+                  </button>
+                </SignUpButton>
               </div>
             )}
           </nav>

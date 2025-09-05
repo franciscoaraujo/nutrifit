@@ -8,7 +8,7 @@ import Textarea from '@/components/ui/Textarea';
 import Card from '@/components/ui/Card';
 import { Badge } from '@/components/ui/badge';
 import { progressoService } from '@/services/ProgressoService';
-import { useAuth } from '@/hooks/useAuth';
+import { useUser } from '@clerk/nextjs';
 import { PlanoAtivo } from '@/types/user';
 
 interface RegistrarDietaFormProps {
@@ -17,7 +17,7 @@ interface RegistrarDietaFormProps {
 }
 
 export default function RegistrarDietaForm({ onSuccess, onCancel }: RegistrarDietaFormProps) {
-  const { user } = useAuth();
+  const { user } = useUser();
   const [planoAtivo, setPlanoAtivo] = useState<PlanoAtivo | null>(null);
   const [formData, setFormData] = useState({
     data: new Date().toISOString().split('T')[0],

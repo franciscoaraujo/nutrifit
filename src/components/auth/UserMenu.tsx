@@ -1,19 +1,29 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { useUser, useClerk, SignInButton, SignUpButton } from '@clerk/nextjs';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faSignOutAlt, faCog, faChartLine } from '@fortawesome/free-solid-svg-icons';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 export default function UserMenu() {
-  const { user, isLoading, logout } = useAuth();
+  const { user, isLoaded } = useUser();
+  const { signOut } = useClerk();
   const [isOpen, setIsOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    setIsSigningOut(true);
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+    } finally {
+      setIsSigningOut(false);
+    }
   };
 
   // Fechar o menu quando clicar fora dele
@@ -30,7 +40,7 @@ export default function UserMenu() {
     };
   }, []);
 
-  if (isLoading) {
+  if (!isLoaded) {
     return (
       <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse"></div>
     );
@@ -39,19 +49,17 @@ export default function UserMenu() {
   if (!user) {
     return (
       <div className="flex space-x-2">
-        <Link 
-          href="/auth/login"
-          className="text-sm font-medium text-primary hover:text-primary/80"
-        >
-          Entrar
-        </Link>
+        <SignInButton mode="modal">
+          <button className="text-sm font-medium text-primary hover:text-primary/80">
+            Entrar
+          </button>
+        </SignInButton>
         <span className="text-gray-300">|</span>
-        <Link 
-          href="/auth/register"
-          className="text-sm font-medium text-primary hover:text-primary/80"
-        >
-          Registrar
-        </Link>
+        <SignUpButton mode="modal">
+          <button className="text-sm font-medium text-primary hover:text-primary/80">
+            Registrar
+          </button>
+        </SignUpButton>
       </div>
     );
   }
@@ -62,9 +70,9 @@ export default function UserMenu() {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-2 focus:outline-none"
       >
-        {false ? (
+        {user?.imageUrl ? (
           <Image 
-            src="" 
+            src={user.imageUrl} 
             alt="Foto do perfil" 
             width={32}
             height={32}
@@ -76,7 +84,7 @@ export default function UserMenu() {
           </div>
         )}
         <span className="text-sm font-medium hidden md:block">
-          {user?.name || 'Usuário'}
+          {user?.fullName || user?.firstName || 'Usuário'}
         </span>
       </button>
 
@@ -84,9 +92,9 @@ export default function UserMenu() {
         <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
           <div className="px-4 py-2 border-b border-gray-100">
             <div className="flex items-center space-x-3">
-              {false ? (
+              {user?.imageUrl ? (
                 <Image 
-                  src="" 
+                  src={user.imageUrl} 
                   alt="Foto do perfil" 
                   width={40}
                   height={40}
@@ -98,14 +106,14 @@ export default function UserMenu() {
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">{user?.name}</p>
-                <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                <p className="text-sm font-medium text-gray-900 truncate">{user?.fullName || user?.firstName}</p>
+                <p className="text-xs text-gray-500 truncate">{user?.primaryEmailAddress?.emailAddress}</p>
               </div>
             </div>
           </div>
 
           <Link 
-            href="/dashboard/perfil"
+            href="/perfil"
             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center"
             onClick={() => setIsOpen(false)}
           >
@@ -113,21 +121,17 @@ export default function UserMenu() {
             Meu Perfil
           </Link>
 
-          <Link 
-            href="/dashboard"
-            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center"
-            onClick={() => setIsOpen(false)}
-          >
-            <FontAwesomeIcon icon={faChartLine} className="mr-2 h-4 w-4 text-gray-400" />
-            Dashboard
-          </Link>
-
           <button
             onClick={handleLogout}
-            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center border-t border-gray-100"
+            disabled={isSigningOut}
+            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center border-t border-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <FontAwesomeIcon icon={faSignOutAlt} className="mr-2 h-4 w-4 text-gray-400" />
-            Sair
+            {isSigningOut ? (
+              <LoadingSpinner size="sm" color="gray" className="mr-2" />
+            ) : (
+              <FontAwesomeIcon icon={faSignOutAlt} className="mr-2 h-4 w-4 text-gray-400" />
+            )}
+            {isSigningOut ? 'Saindo...' : 'Sair'}
           </button>
         </div>
       )}

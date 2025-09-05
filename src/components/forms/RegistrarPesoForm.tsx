@@ -6,7 +6,7 @@ import Input from '@/components/ui/Input';
 import Label from '@/components/ui/Label';
 import Card from '@/components/ui/Card';
 import { progressoService } from '@/services/ProgressoService';
-import { useAuth } from '@/hooks/useAuth';
+import { useUser } from '@clerk/nextjs';
 
 interface RegistrarPesoFormProps {
   onSuccess?: () => void;
@@ -14,7 +14,7 @@ interface RegistrarPesoFormProps {
 }
 
 export default function RegistrarPesoForm({ onSuccess, onCancel }: RegistrarPesoFormProps) {
-  const { user } = useAuth();
+  const { user } = useUser();
   const [formData, setFormData] = useState({
     data: new Date().toISOString().split('T')[0], // Data atual
     peso: ''

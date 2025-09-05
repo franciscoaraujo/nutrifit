@@ -7,7 +7,7 @@ import Label from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Card from '@/components/ui/Card';
 import { progressoService } from '@/services/ProgressoService';
-import { useAuth } from '@/hooks/useAuth';
+import { useUser } from '@clerk/nextjs';
 import { PlanoAtivo } from '@/types/user';
 
 interface RegistrarJejumFormProps {
@@ -16,7 +16,7 @@ interface RegistrarJejumFormProps {
 }
 
 export default function RegistrarJejumForm({ onSuccess, onCancel }: RegistrarJejumFormProps) {
-  const { user } = useAuth();
+  const { user } = useUser();
   const [planoAtivo, setPlanoAtivo] = useState<PlanoAtivo | null>(null);
   const [formData, setFormData] = useState({
     data: new Date().toISOString().split('T')[0],

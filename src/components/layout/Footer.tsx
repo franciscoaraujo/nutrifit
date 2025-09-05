@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFacebook, faInstagram, faTwitter, faYoutube } from '@fortawesome/free-brands-svg-icons';
+import { SignInButton, SignUpButton } from '@clerk/nextjs';
 
 const Footer = () => {
   return (
@@ -39,19 +40,18 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/dietas" className="text-gray-300 hover:text-[var(--secondary)] transition-colors">
-                  Dietas
-                </Link>
+                <SignInButton mode="modal">
+                  <button className="text-gray-300 hover:text-[var(--secondary)] transition-colors">
+                    Login
+                  </button>
+                </SignInButton>
               </li>
               <li>
-                <Link href="/treinamentos" className="text-gray-300 hover:text-[var(--secondary)] transition-colors">
-                  Treinamentos
-                </Link>
-              </li>
-              <li>
-                <Link href="/receitas" className="text-gray-300 hover:text-[var(--secondary)] transition-colors">
-                  Receitas
-                </Link>
+                <SignUpButton mode="modal">
+                  <button className="text-gray-300 hover:text-[var(--secondary)] transition-colors">
+                    Cadastro
+                  </button>
+                </SignUpButton>
               </li>
             </ul>
           </div>

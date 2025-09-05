@@ -13,14 +13,36 @@ import { PerfilFormData, Sexo, Objetivo, NivelAtividade } from '@/types';
 import { useToast } from '@/hooks/useToast';
 import { localStorageService } from '@/services/LocalStorageService';
 import { progressoService } from '@/services';
-import { useAuth } from '@/hooks/useAuth';
+import { useUser } from '@clerk/nextjs';
+import { RedirectToSignIn } from '@clerk/nextjs';
 
 type PerfilData = PerfilFormData;
 
 export default function ConfiguracaoPerfilPage() {
   const router = useRouter();
   const { showError, showSuccess } = useToast();
-  const { user } = useAuth();
+  const { user, isLoaded } = useUser();
+
+  // Redirecionar para login se não estiver autenticado
+  if (isLoaded && !user) {
+    return <RedirectToSignIn />;
+  }
+
+  // Mostrar loading enquanto carrega
+  if (!isLoaded) {
+    return (
+      <MainLayout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Carregando...</p>
+            </div>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   const [perfil, setPerfil] = useState<PerfilData>({
     nome: '',
@@ -215,7 +237,7 @@ export default function ConfiguracaoPerfilPage() {
       
       // Redirecionar para a página de perfil após 2 segundos
       setTimeout(() => {
-        router.push('/dashboard/perfil');
+        router.push('/perfil');
       }, 2000);
     }, 2000);
   };
@@ -227,10 +249,10 @@ export default function ConfiguracaoPerfilPage() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-emerald-800 font-serif flex items-center gap-3">
-              <FontAwesomeIcon icon={faCog} className="text-emerald-600" />
-              Configuração de Perfil
+              <FontAwesomeIcon icon={faUser} className="text-emerald-600" />
+              Cadastro de Perfil
             </h1>
-            <p className="text-gray-600 mt-2">Configure suas informações pessoais para receber recomendações personalizadas</p>
+            <p className="text-gray-600 mt-2">Complete suas informações pessoais para personalizar sua experiência</p>
           </div>
         </div>
 
@@ -615,7 +637,7 @@ export default function ConfiguracaoPerfilPage() {
                 disabled={salvando}
               >
                 <FontAwesomeIcon icon={faSave} className="mr-2" />
-                {salvando ? 'Salvando...' : 'Salvar Configurações'}
+                {salvando ? 'Salvando...' : 'Finalizar Cadastro'}
               </Button>
             </div>
 
@@ -624,7 +646,7 @@ export default function ConfiguracaoPerfilPage() {
               <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 text-emerald-700">
                 <div className="flex items-center">
                   <FontAwesomeIcon icon={faSave} className="mr-2" />
-                  Configurações salvas com sucesso!
+                  Perfil cadastrado com sucesso!
                 </div>
               </div>
             )}

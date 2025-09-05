@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,14 +12,14 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 
 export default function Home() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoaded } = useUser();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && user) {
-      router.push('/dashboard');
+    if (isLoaded && user) {
+      router.push('/perfil');
     }
-  }, [isLoading, user, router]);
+  }, [isLoaded, user, router]);
   return (
     <MainLayout>
       {/* Hero Section */}
@@ -34,16 +34,9 @@ export default function Home() {
                 Seu acompanhamento personalizado para uma vida mais saudável com dietas, treinamentos e receitas adaptados às suas necessidades.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/auth/register">
-                  <Button variant="secondary" size="lg">
-                    Começar Agora
-                  </Button>
-                </Link>
-                <Link href="/dietas">
-                  <Button variant="outline" size="lg" className="bg-white/10 border-white text-white hover:bg-white/20">
-                    Explorar Dietas
-                  </Button>
-                </Link>
+                <Button variant="secondary" size="lg">
+                  Começar Agora
+                </Button>
               </div>
             </div>
             <div className="md:w-1/2">
@@ -191,11 +184,9 @@ export default function Home() {
                 </li>
               </ul>
               <div className="mt-auto">
-                <Link href="/auth/register">
-                  <Button variant="outline" className="w-full">
-                    Começar Grátis
-                  </Button>
-                </Link>
+                <Button variant="outline" className="w-full">
+                  Começar Grátis
+                </Button>
               </div>
             </Card>
 
@@ -231,11 +222,9 @@ export default function Home() {
                 </li>
               </ul>
               <div className="mt-auto">
-                <Link href="/auth/register">
-                  <Button variant="primary" className="w-full">
-                    Assinar Premium
-                  </Button>
-                </Link>
+                <Button variant="primary" className="w-full">
+                  Assinar Premium
+                </Button>
               </div>
             </Card>
 
@@ -272,11 +261,9 @@ export default function Home() {
                 </li>
               </ul>
               <div className="mt-auto">
-                <Link href="/auth/register">
-                  <Button variant="secondary" className="w-full">
-                    Assinar Pro
-                  </Button>
-                </Link>
+                <Button variant="secondary" className="w-full">
+                  Assinar Pro
+                </Button>
               </div>
             </Card>
           </div>
@@ -288,11 +275,9 @@ export default function Home() {
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6 font-serif">Pronto para transformar sua vida?</h2>
           <p className="text-xl mb-8 max-w-2xl mx-auto">Junte-se a milhares de pessoas que já estão alcançando seus objetivos com o NutriFit.</p>
-          <Link href="/auth/register">
-            <Button variant="secondary" size="lg">
-              Comece Hoje Mesmo
-            </Button>
-          </Link>
+          <Button variant="secondary" size="lg">
+            Comece Hoje Mesmo
+          </Button>
         </div>
       </section>
     </MainLayout>
