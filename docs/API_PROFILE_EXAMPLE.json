@@ -1,0 +1,49 @@
+{
+  "user_profile": {
+    "personal_info": {
+      "name": "João Silva",
+      "email": "joao.silva@email.com",
+      "phone": "+55 11 99999-9999",
+      "birth_date": "1990-05-15",
+      "gender": "masculino"
+    },
+    "physical_data": {
+      "height": 175,
+      "weight": 80,
+      "body_fat_percentage": 15.5,
+      "muscle_mass_percentage": 42.3
+    },
+    "health_info": {
+      "activity_level": "moderado",
+      "health_conditions": "Hipertensão controlada",
+      "medications": "Losartana 50mg",
+      "allergies": "Amendoim, frutos do mar",
+      "dietary_restrictions": "Sem lactose"
+    },
+    "goals": {
+      "primary_goal": "perder_peso",
+      "target_weight": 75,
+      "timeline": "6 meses",
+      "specific_goals": "Reduzir gordura abdominal e melhorar condicionamento físico"
+    },
+    "preferences": {
+      "preferred_meal_times": ["07:00", "12:00", "15:30", "19:00"],
+      "food_preferences": "Prefere carnes magras, vegetais e frutas. Evita frituras.",
+      "cooking_experience": "intermediario",
+      "budget_range": "medio",
+      "time_available_cooking": 45
+    },
+    "lifestyle": {
+      "work_schedule": "Segunda a sexta, 8h às 18h",
+      "sleep_hours": 7,
+      "stress_level": "medio",
+      "water_intake": 2.5
+    },
+    "metadata": {
+      "clerk_user_id": "user_2abc123def456ghi789",
+      "created_at": "2024-01-15T10:30:00.000Z",
+      "updated_at": "2024-01-15T10:30:00.000Z",
+      "profile_version": "1.0"
+    }
+  }
+}

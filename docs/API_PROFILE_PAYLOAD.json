@@ -1,0 +1,49 @@
+{
+  "user_profile": {
+    "personal_info": {
+      "name": "string",
+      "email": "string",
+      "phone": "string",
+      "birth_date": "YYYY-MM-DD",
+      "gender": "masculino|feminino|outro"
+    },
+    "physical_data": {
+      "height": "number (cm)",
+      "weight": "number (kg)",
+      "body_fat_percentage": "number (opcional)",
+      "muscle_mass_percentage": "number (opcional)"
+    },
+    "health_info": {
+      "activity_level": "sedentario|leve|moderado|intenso|muito_intenso",
+      "health_conditions": "string (opcional)",
+      "medications": "string (opcional)",
+      "allergies": "string (opcional)",
+      "dietary_restrictions": "string (opcional)"
+    },
+    "goals": {
+      "primary_goal": "perder_peso|ganhar_massa|manter_peso|melhorar_saude",
+      "target_weight": "number (kg, opcional)",
+      "timeline": "string (ex: '3 meses', opcional)",
+      "specific_goals": "string (opcional)"
+    },
+    "preferences": {
+      "preferred_meal_times": ["string"],
+      "food_preferences": "string (opcional)",
+      "cooking_experience": "iniciante|intermediario|avancado",
+      "budget_range": "baixo|medio|alto",
+      "time_available_cooking": "number (minutos por dia)"
+    },
+    "lifestyle": {
+      "work_schedule": "string (opcional)",
+      "sleep_hours": "number (horas por noite)",
+      "stress_level": "baixo|medio|alto",
+      "water_intake": "number (litros por dia, opcional)"
+    },
+    "metadata": {
+      "clerk_user_id": "string",
+      "created_at": "ISO 8601 timestamp",
+      "updated_at": "ISO 8601 timestamp",
+      "profile_version": "string (ex: '1.0')"
+    }
+  }
+}
