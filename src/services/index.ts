@@ -3,6 +3,7 @@
 export { UserService, userService } from './UserService';
 export { DashboardService, dashboardService } from './DashboardService';
 export { ProgressoService, progressoService } from './ProgressoService';
+export { ClerkApiService, clerkApiService } from './ClerkApiService';
 
 // Classe base para serviços com funcionalidades comuns
 export abstract class BaseService {

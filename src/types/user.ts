@@ -80,6 +80,10 @@ export interface PerfilFormData {
   nivelAtividade: NivelAtividade | '';
   dietas?: string[]; // Array de tipos de dieta selecionadas
   foto?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  email?: string;
+  token?: string;
 }
 
 export interface UserFormData {

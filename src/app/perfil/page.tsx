@@ -20,29 +20,8 @@ type PerfilData = PerfilFormData;
 
 export default function ConfiguracaoPerfilPage() {
   const router = useRouter();
-  const { showError, showSuccess } = useToast();
+  const { showSuccess, showError } = useToast();
   const { user, isLoaded } = useUser();
-
-  // Redirecionar para login se não estiver autenticado
-  if (isLoaded && !user) {
-    return <RedirectToSignIn />;
-  }
-
-  // Mostrar loading enquanto carrega
-  if (!isLoaded) {
-    return (
-      <MainLayout>
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex justify-center items-center min-h-[400px]">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Carregando...</p>
-            </div>
-          </div>
-        </div>
-      </MainLayout>
-    );
-  }
 
   const [perfil, setPerfil] = useState<PerfilData>({
     nome: '',
@@ -53,21 +32,31 @@ export default function ConfiguracaoPerfilPage() {
     objetivo: '',
     nivelAtividade: '',
     dietas: [],
-    foto: ''
+    foto: '',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    email: '',
+    token: ''
   });
   const [salvando, setSalvando] = useState(false);
   const [salvo, setSalvo] = useState(false);
   const [erros, setErros] = useState<Record<string, string>>({});
 
-
   // Carregar dados salvos do localStorage quando a página for carregada
   useEffect(() => {
     const carregarDadosSalvos = () => {
-      const currentUserId = localStorageService.getCurrentUserId();
-      if (!currentUserId) {
-        console.warn('Usuário não está logado');
+      if (!isLoaded || !user) {
+        console.warn('Usuário não está logado no Clerk');
         return;
       }
+      //user_32IO41A8ZaD5bSHJkNo4M6xQA90
+      //user_32IO41A8ZaD5bSHJkNo4M6xQA90
+      const currentUserId = user.id;
+      const nameUser = user.username;
+      const emailUser = user.emailAddresses[0].emailAddress;
+      
+      // Salvar o ID do usuário no localStorage para compatibilidade
+      localStorageService.setCurrentUserId(currentUserId);
       
       // Carregar dados de configuração do perfil específico do usuário
     const configSalva = localStorageService.getItem<PerfilFormData>(`perfilConfiguracao_${currentUserId}`);
@@ -80,7 +69,11 @@ export default function ConfiguracaoPerfilPage() {
           altura: configSalva.altura || 0,
           peso: configSalva.peso || 0,
           objetivo: configSalva.objetivo || '',
-          nivelAtividade: configSalva?.nivelAtividade || ''
+          nivelAtividade: configSalva?.nivelAtividade || '',
+          createdAt: configSalva?.createdAt || new Date(),
+          updatedAt: configSalva?.updatedAt || new Date(),
+          email: emailUser || '',
+          token: currentUserId || ''
         }));
       } catch (error) {
         console.error('Erro ao carregar configuração do perfil:', error);
@@ -100,9 +93,23 @@ export default function ConfiguracaoPerfilPage() {
     };
 
     carregarDadosSalvos();
-  }, []);
+  }, [isLoaded, user]);
 
+  // Verificar se o usuário está autenticado
+  if (isLoaded && !user) {
+    return <RedirectToSignIn />;
+  }
 
+  // Mostrar loading enquanto carrega os dados do usuário
+  if (!isLoaded) {
+    return (
+      <MainLayout>
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="text-lg">Carregando...</div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   const handleInputChange = (campo: keyof PerfilData, valor: string) => {
     setPerfil(prev => ({
@@ -157,6 +164,7 @@ export default function ConfiguracaoPerfilPage() {
   };
 
   const validarCampos = () => {
+   // console.log('=== TESTE: Validando campos - dados do perfil ===', perfil);
     const novosErros: Record<string, string> = {};
     
     if (!perfil.sexo) {
@@ -194,10 +202,15 @@ export default function ConfiguracaoPerfilPage() {
   };
 
   const salvarPerfil = async () => {
+    console.log('=== TESTE: Botão clicado - Iniciando salvarPerfil ===');
+    
     if (!validarCampos()) {
+      console.log('=== TESTE: Validação falhou ===');
       showError('Por favor, corrija os erros nos campos destacados.', 'Erro de validação');
       return;
     }
+    
+    console.log('=== TESTE: Validação passou ===');
 
     const currentUserId = localStorageService.getCurrentUserId();
     
@@ -208,39 +221,73 @@ export default function ConfiguracaoPerfilPage() {
 
     setSalvando(true);
     
-    // Simular salvamento
-    setTimeout(() => {
-      setSalvando(false);
-      setSalvo(true);
-      showSuccess('Perfil salvo com sucesso! Redirecionando...', 'Sucesso');
+    console.log('=== TESTE: Função salvarPerfil chamada ===');
+    
+    try {
       
-      // Salvar dados do perfil no localStorage específico do usuário
-      if (perfil.foto) {
-        localStorageService.setItem(`fotoPerfil_${currentUserId}`, perfil.foto);
-      }
-      
-      // Salvar todos os dados de configuração do perfil específico do usuário
+      // Preparar dados do perfil para envio
       const dadosConfiguracao = {
         sexo: perfil.sexo,
         idade: perfil.idade,
         altura: perfil.altura,
         peso: perfil.peso,
         objetivo: perfil.objetivo,
-        nivelAtividade: perfil.nivelAtividade
+        nivelAtividade: perfil.nivelAtividade,
+        nome: perfil.nome,
+        email: perfil.email,
+        userId: currentUserId,
+        timestamp: new Date().toISOString(),
+        source: 'nutri-fit-app'
       };
-      localStorageService.setItem(`perfilConfiguracao_${currentUserId}`, dadosConfiguracao);
-      
 
+      console.log('=== TESTE: Dados a serem enviados ===', dadosConfiguracao);
+
+      // Salvar dados localmente
+      if (perfil.foto) {
+        localStorageService.setItem(`fotoPerfil_${currentUserId}`, perfil.foto);
+      }
+      
+      localStorageService.setItem(`perfilConfiguracao_${currentUserId}`, dadosConfiguracao);
       
       // Disparar evento customizado para notificar outras páginas
       window.dispatchEvent(new Event('localStorageUpdate'));
+      
+      setSalvando(false);
+      setSalvo(true);
+      showSuccess('Perfil salvo e enviado com sucesso! Redirecionando...', 'Sucesso');
       
       // Redirecionar para a página de perfil após 2 segundos
       setTimeout(() => {
         router.push('/perfil');
       }, 2000);
-    }, 2000);
+      
+    } catch (error) {
+      setSalvando(false);
+      console.error('Erro ao salvar perfil:', error);
+      showError('Erro ao salvar perfil. Tente novamente.', 'Erro');
+    }
   };
+
+  // Redirecionar para login se não estiver autenticado
+  if (isLoaded && !user) {
+    return <RedirectToSignIn />;
+  }
+
+  // Mostrar loading enquanto carrega
+  if (!isLoaded) {
+    return (
+      <MainLayout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Carregando...</p>
+            </div>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
