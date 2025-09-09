@@ -11,6 +11,7 @@ import Input from '@/components/ui/Input';
 import Card from '@/components/ui/Card';
 import { PerfilFormData, Sexo, Objetivo, NivelAtividade } from '@/types';
 import { useToast } from '@/hooks/useToast';
+import { useAuthApi } from '@/hooks/useAuth';
 import { localStorageService } from '@/services/LocalStorageService';
 import { progressoService } from '@/services';
 import { useUser } from '@clerk/nextjs';
@@ -22,6 +23,7 @@ export default function ConfiguracaoPerfilPage() {
   const router = useRouter();
   const { showSuccess, showError } = useToast();
   const { user, isLoaded } = useUser();
+  const { sendProfile, isLoading: isApiLoading, error: apiError } = useAuthApi();
 
   const [perfil, setPerfil] = useState<PerfilData>({
     nome: '',
@@ -241,6 +243,25 @@ export default function ConfiguracaoPerfilPage() {
       };
 
       console.log('=== TESTE: Dados a serem enviados ===', dadosConfiguracao);
+
+      // Enviar dados para API externa
+      console.log('=== TESTE: Enviando dados para API externa ===');
+      try {
+        const apiResponse = await sendProfile(dadosConfiguracao);
+        
+        if (apiResponse) {
+          console.log('=== TESTE: Resposta da API externa ===', apiResponse);
+          showSuccess('Dados enviados para API externa com sucesso!', 'API Externa');
+        } else {
+          console.warn('=== TESTE: API externa não retornou dados ===');
+          showError('API externa não respondeu adequadamente', 'Aviso de API');
+        }
+      } catch (apiErr) {
+        console.error('=== TESTE: Erro ao enviar para API externa ===', apiErr);
+        const errorMessage = apiErr instanceof Error ? apiErr.message : 'Erro desconhecido na API';
+        showError(`Falha ao enviar dados para API externa: ${errorMessage}`, 'Erro de API');
+        // Continua o processo mesmo com erro na API externa
+      }
 
       // Salvar dados localmente
       if (perfil.foto) {
